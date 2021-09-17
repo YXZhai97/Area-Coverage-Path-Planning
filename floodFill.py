@@ -33,4 +33,9 @@ image = [
     [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
 ]
 
-print(floodFill(image, 3, 3, 1))
+print(floodFill(image, 3, 3, 1)) #todo not finished
+
+
+
+
+
