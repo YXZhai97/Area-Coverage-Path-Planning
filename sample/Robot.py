@@ -45,13 +45,8 @@ class Obstacle:
 
 
 
-# Test
-agent1 = AlphaAgent()
-print(agent1.id)
-print(AlphaAgent.number_of_agent)
-print(agent1.number_of_agent)
 
-agent2 = AlphaAgent()
-print(agent2.id)
-print(AlphaAgent.number_of_agent)
-print(agent2.number_of_agent)
+
+
+
+
