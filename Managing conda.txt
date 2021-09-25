@@ -1,0 +1,26 @@
+1. show all envs 
+	conda info --envs
+	or
+	conda env list
+
+
+3. activate a env
+	conda activate myenv
+
+2. show packages in envs 
+	conda list -n myenv (when env is not activated)
+	conda list          (when env is activated)
+
+4. install package 
+	conda install --name myenv scipy 
+	or after activating the env 
+	conda install scipy=0.15.0
+	or 
+	pip install 
+
+4. run python script in Anaconda Prompt 
+	cd to the script location 
+	python script.py input.yaml output.yaml
+
+
+	
