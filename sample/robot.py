@@ -26,10 +26,19 @@ class AlphaAgent:
         cls.number_of_agent += 1
 
 
+class Environment:
+    def __init__(self):
+
+        pass
+
+    def add_obstacle(self):
+        pass
 
 
+class Obstacle:
 
-
+    def __init__(self):
+        pass
 
 
 
