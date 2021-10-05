@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
 import math
-
+import global_value as gv
 
 class EnvMap:
     def __init__(self, x_bound, y_bound, grid_length):
@@ -17,6 +17,7 @@ class EnvMap:
         self.x_n = int(self.x_bound / self.grid_length)
         self.y_n = int(self.y_bound / self.grid_length)
         self.grid_map = self.make_grid(self.x_n, self.y_n)
+        gv.env_map=self.grid_map
 
     def make_grid(self, row, col):
 
@@ -68,16 +69,16 @@ class EnvMap:
             end_point = [key_points[2 * i + 2], key_points[2 * i + 3]]
             self.add_line(start_point, end_point)
 
-    def add_irregular(self, start_point, matrix):
-        """
-
-        Args:
-            start_point:
-            matrix:
-
-        Returns:
-
-        """
+    # def add_irregular(self, start_point, matrix):
+    #     """
+    #
+    #     Args:
+    #         start_point:
+    #         matrix:
+    #
+    #     Returns:
+    #
+    #     """
 
 
 
@@ -140,22 +141,24 @@ class EnvMap:
 
     def floodFill(self, sr, sc, newColor):
 
-        row = len(self.grid_map)
-        col = len(self.grid_map[0])
+        R = len(self.grid_map)
+        C = len(self.grid_map[0])
         color = self.grid_map[sr][sc]
-
+        if color == newColor: return
         def dfs(r, c):
             if self.grid_map[r][c] == color:
                 self.grid_map[r][c] = newColor
                 if r >= 1:
                     dfs(r - 1, c)
-                if r + 1 < row:
+                if r + 1 < R:
                     dfs(r + 1, c)
                 if c >= 1:
                     dfs(r, c - 1)
-                if c + 1 < col: dfs(r, c + 1)
+                if c + 1 < C:
+                    dfs(r, c + 1)
 
         dfs(sr, sc)
+        return
 
     def show_map(self):
         '''
@@ -180,8 +183,10 @@ class EnvMap:
         plt.show()
 
 
-mymap = EnvMap(300, 300, 1)
-mymap.add_circle(90, 60, 30)
-mymap.add_circle(200,150,30)
-mymap.add_polygon([100,100,160,180,160,250,100,280])
-mymap.show_map()
+if __name__=="__main__":
+    mymap = EnvMap(300, 300, 1)
+    mymap.add_circle(90, 60, 45)
+    mymap.add_circle(200,150,30)
+    mymap.add_polygon([100,100,160,180,160,250,100,280])
+    mymap.floodFill(90,60,1)
+    mymap.show_map()
