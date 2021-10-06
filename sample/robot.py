@@ -33,15 +33,18 @@ class Robot:
         # Define initial velocity v_x, v_y
         self.initial_state[2]=np.random.uniform(0,1)*gv.v_bound
         self.initial_state[3]=np.random.uniform(0,1)*gv.v_bound
+        # i is the current robot index
         i=self.id
         flag=0
-        # Define initial state x, y
-        if i==1:
 
-        while flag<self.id:
+        # Define initial state x, y
+        while flag<=i:
+            # sample x_i y_i from uniform distribution
             x_i = np.random.uniform(0, 1) * gv.x_bound
             y_i = np.random.uniform(0, 1) * gv.y_bound
 
+            # compare x_i y_i to previously generated initial sate
+            #  check the distance between them
             for j in range(i):
                 x_j=gv.robotList[j].initial_state[0]
                 y_j=gv.robotList[j].initial_state[1]
@@ -53,9 +56,11 @@ class Robot:
                     break
                 else:
                     flag+=1
-
-            gv.robotList[i].initial_state[0] = x_i
-            gv.robotList[i].initial_state[1] = y_i
+            # if the distance between all initial state fulfill the condition
+            if flag==i:
+                gv.robotList[i].initial_state[0] = x_i
+                gv.robotList[i].initial_state[1] = y_i
+                break
 
 
 
@@ -84,4 +89,7 @@ if __name__=="__main__":
         robot.random_init_state()
         print(robot.initial_state)
     print(gv.robotList[0].initial_state)
+    print(gv.robotList[1].id)
+    robot5=Robot()
+    print(robot5.id)
 
