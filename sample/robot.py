@@ -23,7 +23,7 @@ class Robot:
         self.map = []
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros((2 * self.dimension))
-        self.state = []
+        self.state = np.zeros((1,4))
         self.neighbour = []
         self.initial_target=np.zeros((self.dimension))
         self.target=[]
@@ -91,6 +91,16 @@ class Robot:
         self.initial_target[0]=round(x)
         self.initial_target[1]=round(y)
 
+
+    def update_state(self):
+        pass
+
+
+
+
+class BetaAgent():
+    def __init__(self):
+        pass
 
 
 
