@@ -4,3 +4,6 @@ x_bound=300
 y_bound=300
 v_bound=2
 env_map=[]
+epsilon=0.08
+h_alpha=0.2
+h_beta=0.9
