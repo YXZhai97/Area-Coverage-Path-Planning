@@ -18,6 +18,14 @@ def sigma_norm(z):
 
 
 def adjacency_alpha(robot_list):
+    '''
+    Args:
+        robot_list: a list containing robot objects
+
+    Returns:
+        a n by n adjacency matrix
+    '''
+
     n = len(robot_list)
     A = np.zeros((n, n))
     rc=robot_list[0].rc
@@ -33,10 +41,19 @@ def adjacency_alpha(robot_list):
 
 
 def adjacency_beta():
+    #todo
     pass
 
 
 def bump_alpha(z):
+    '''
+
+    Args:
+        z: a scalar value
+
+    Returns: r, a scalar between 0 and 1
+
+    '''
     r=0
     if z>=0 and z<gv.h_alpha:
         r=1
@@ -47,11 +64,28 @@ def bump_alpha(z):
     return r
 
 
+def bump_beta(z):
+    '''
 
+    Args:
+        z: a scalar value
 
+    Returns: r, a scalar value between 0 and 1
 
-def bump_beta(self):
+    '''
+    r = 0
+    if z >= 0 and z < gv.h_beta:
+        r = 1
+    elif z >= gv.h_beta and z < 1:
+        r = 0.5 * (1 + math.cos(math.pi * (z - gv.h_beta) / (1 - gv.h_beta)))
+    else:
+        r = 0
+    return r
+
+def phi():
     pass
+
+
 
 if __name__=="__main__":
     # test bump_alpha function
@@ -66,7 +100,7 @@ if __name__=="__main__":
     # plt.savefig('../image/bump_alpha.png')
     plt.show()
 
-    # test
+    # test the adjacency_alpha function
     robot.define_robot(6)
     for robot in gv.robotList:
         robot.random_init_state()
