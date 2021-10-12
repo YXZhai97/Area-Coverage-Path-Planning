@@ -30,9 +30,9 @@ def adjacency_alpha(robot_list):
     A = np.zeros((n, n))
     rc=robot_list[0].rc
     for i in range(n):
-        q_i = robot_list[i].initial_state[:2]
+        q_i = np.array(robot_list[i].state[:2])
         for j in range(n):
-            q_j=robot_list[j].initial_state[:2]
+            q_j=np.array(robot_list[j].state[:2])
             if i != j:
                 A[i, j] = bump_alpha(sigma_norm(q_j-q_i)/sigma_norm(rc))
             else:
@@ -82,8 +82,58 @@ def bump_beta(z):
         r = 0
     return r
 
-def phi():
-    pass
+def phi_alpha(z):
+    '''
+
+    Args:
+        z: a scalar value
+
+    Returns: a scalar
+
+    '''
+    d=sigma_norm(gv.d_alpha)
+    y=bump_alpha(z/d)*(sigma_1(z-d)-1)
+    return y
+
+
+def phi_beta(z):
+    '''
+
+    Args:
+        z: scalar
+
+    Returns: y a scalar
+
+    '''
+
+    d = sigma_norm(gv.d_beta)
+    y = bump_alpha(z / d) * (sigma_1(z - d) - 1)
+    return y
+
+
+
+
+
+def sigma_1(z):
+
+    y=z/math.sqrt(1+(np.linalg.norm(z)**2))
+    return y
+
+def norm_direction(q_i,q_j):
+    '''
+
+    Args:
+        q_i: a np state vector of robot i
+        q_j: a np state vector of robot j
+
+    Returns: norm vector
+
+    '''
+    n=np.zeros((1,2))
+    n=(q_j-q_i)/math.sqrt(1+gv.epsilon*(np.linalg.norm(q_j-q_i)**2))
+    return n
+
+
 
 
 
@@ -105,3 +155,15 @@ if __name__=="__main__":
     for robot in gv.robotList:
         robot.random_init_state()
     print(adjacency_alpha(gv.robotList))
+
+    # test the norm_direction() function
+    q_i=np.array([100,56])
+    q_j = np.array([100,5])
+    print(norm_direction(q_i,q_j))
+
+    # test sigma_norm
+    print(sigma_norm([0,-51]))
+    print(phi_alpha(sigma_norm([0,-51])))
+
+
+
