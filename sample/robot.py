@@ -11,7 +11,7 @@ import numpy as np
 import math
 import global_value as gv
 import env_map as env
-import methods
+import methods as m
 
 class Robot:
     number_of_robot = 0
@@ -130,15 +130,22 @@ class Robot:
         q_i = np.array(self.state[:2])
         # velocity of robot i
         v_i = np.array((self.state[2:]))
-        A = methods.adjacency_alpha(gv.robotList)
+        A = m.adjacency_alpha(gv.robotList)
+        print(A)
+        neighbour = self.get_neighbour()
 
-        for robot_j in self.neighbour:
+        for robot_j in neighbour:
             j = robot_j.id
             a_ij = A[i,j]
             # position and velocity of robot j
             q_j = np.array(robot_j.state[:2])
             v_j = np.array(robot_j.state[2:])
-            u_alpha_j=gv.c1_alpha
+            u_alpha_j_1=gv.c1_alpha*m.phi_alpha(m.sigma_norm(q_j-q_i))*m.norm_direction(q_i,q_j)
+            u_alpha_j_2=gv.c2_alpha*a_ij*(v_j-v_i)
+            u_alpha+=u_alpha_j_1
+        return u_alpha
+
+
 
 
     def benefit_value(self):
@@ -193,10 +200,18 @@ if __name__=="__main__":
     # test get_neighbour()
     gv.robotList[0].state=[24,56,0,0]
     gv.robotList[1].state = [2, 56, 0, 0]
-    gv.robotList[2].state = [100, 56, 0, 0]
-    gv.robotList[3].state = [100, 5, 0, 0]
+    gv.robotList[2].state = [90, 56, 0, 0]
+    gv.robotList[3].state = [100, 60, 0, 0]
     gv.robotList[4].state = [53, 56, 0, 0]
-    gv.robotList[5].state = [54, 36, 0, 0]
+    gv.robotList[5].state = [54, 90, 0, 0]
     print(gv.robotList[2].get_neighbour())
     print(gv.robotList[5])
     print(gv.robotList[2].neighbour)
+    print(m.adjacency_alpha(gv.robotList))
+
+    # test control input
+    print(gv.robotList[2].control_input())
+
+    a=np.array([1,2])
+    b=np.array([3,4])
+
