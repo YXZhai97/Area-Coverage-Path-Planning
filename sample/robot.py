@@ -11,6 +11,7 @@ import numpy as np
 import math
 import global_value as gv
 import env_map as env
+import methods
 
 class Robot:
     number_of_robot = 0
@@ -97,6 +98,55 @@ class Robot:
 
 
 
+    def get_neighbour(self):
+        '''
+
+        Returns: a list containing the robot's neighbour robots
+
+        '''
+        # get the id of the robot
+        i=self.id
+        # the current state of the robot
+        q_i=np.array(self.state[:2])
+
+        # find the neighbour in the robotList
+        for r in gv.robotList:
+            j=r.id
+            q_j=np.array(r.state[:2])
+            # check the distance within communication range
+            if i!=j and np.linalg.norm(q_j-q_i)<self.rc:
+                self.neighbour.append(r)
+        return self.neighbour
+
+
+    def control_input(self):
+        # control input is two dimensional vector
+        u = np.zeros((1, self.dimension))
+        u_alpha = np.zeros((1, self.dimension))
+        u_beta = np.zeros((1, self.dimension))
+        u_gamma = np.zeros((1, self.dimension))
+        i=self.id
+        # position of the robot i
+        q_i = np.array(self.state[:2])
+        # velocity of robot i
+        v_i = np.array((self.state[2:]))
+        A = methods.adjacency_alpha(gv.robotList)
+
+        for robot_j in self.neighbour:
+            j = robot_j.id
+            a_ij = A[i,j]
+            # position and velocity of robot j
+            q_j = np.array(robot_j.state[:2])
+            v_j = np.array(robot_j.state[2:])
+            u_alpha_j=gv.c1_alpha
+
+
+    def benefit_value(self):
+        pass
+
+
+
+
 
 class BetaAgent():
     def __init__(self):
@@ -140,4 +190,13 @@ if __name__=="__main__":
     # plt.savefig('../image/initial_state.png')
     plt.show()
 
-
+    # test get_neighbour()
+    gv.robotList[0].state=[24,56,0,0]
+    gv.robotList[1].state = [2, 56, 0, 0]
+    gv.robotList[2].state = [100, 56, 0, 0]
+    gv.robotList[3].state = [100, 5, 0, 0]
+    gv.robotList[4].state = [53, 56, 0, 0]
+    gv.robotList[5].state = [54, 36, 0, 0]
+    print(gv.robotList[2].get_neighbour())
+    print(gv.robotList[5])
+    print(gv.robotList[2].neighbour)
