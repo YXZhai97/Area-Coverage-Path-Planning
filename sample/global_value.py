@@ -1,7 +1,8 @@
 import math
 
 robotList=[]
-d_alpha=10
+d_alpha=12
+d_beta=6
 x_bound=300
 y_bound=300
 v_bound=2
