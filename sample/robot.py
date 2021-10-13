@@ -89,6 +89,8 @@ class Robot:
             y=center_y+r*math.sin(theta)
             if x>0 and y>0:
                 flag=0
+        # target can also be float, a round may not be necessary
+        # todo
         self.initial_target[0]=round(x)
         self.initial_target[1]=round(y)
 
@@ -122,6 +124,7 @@ class Robot:
     def control_input(self):
         # control input is two dimensional vector
         u = np.zeros((1, self.dimension))
+        # control input has 3 parts
         u_alpha = np.zeros((1, self.dimension))
         u_beta = np.zeros((1, self.dimension))
         u_gamma = np.zeros((1, self.dimension))
@@ -191,7 +194,9 @@ if __name__=="__main__":
         print('initial state:',robot.initial_state)
         print('initial target:',robot.initial_target)
     plt.title('The initial state of robots')
+    # add x-label
     plt.xlabel('x-coordinate')
+    # add y label
     plt.ylabel('y-coordinate')
     # save image to the image folder
     # plt.savefig('../image/initial_state.png')
