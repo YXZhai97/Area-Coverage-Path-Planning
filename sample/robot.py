@@ -21,14 +21,17 @@ class Robot:
         self.rs = 10
         self.rc = 60
         self.dimension = 2
-        self.map = []
+        self.infomap = np.zeros((gv.x_n,gv.y_n))
+        self.tarobsmap=np.zeros((gv.x_n,gv.y_n))
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros((2 * self.dimension))
         self.state = np.zeros((1,4))
         self.neighbour = []
+        # target position [x,y], no velocity target
         self.initial_target=np.zeros((self.dimension))
-        self.target=[]
-        self.v_target=[]
+        self.target=np.zeros((self.dimension))
+        # benefit matrix row and column equal env_map dimension
+        self.benefit_matrix=np.zeros((gv.x_n, gv.y_n))
         Robot.add_agent()  # call the class method when initialize the object
 
     @classmethod
@@ -146,13 +149,34 @@ class Robot:
             u_alpha_j_1=gv.c1_alpha*m.phi_alpha(m.sigma_norm(q_j-q_i))*m.norm_direction(q_i,q_j)
             u_alpha_j_2=gv.c2_alpha*a_ij*(v_j-v_i)
             u_alpha+=u_alpha_j_1
-        return u_alpha
+
+        u=u_alpha+u_beta+u_gamma
+
+        return u
 
 
 
 
     def benefit_value(self):
-        pass
+        lamda_matrix=np.zeros((gv.x_n,gv.y_n))
+        for i in range(gv.x_n):
+            for j in range(gv.y_n):
+                x_center=i*gv.grid_length+0.5*gv.grid_length
+                y_center=j*gv.grid_length+0.5*gv.grid_length
+                center=np.array([x_center,y_center])
+
+                # if the current cell is occupied by an obstacle
+                if self.tarobsmap[i,j]<0:
+                    self.benefit_matrix[i,j]=0
+                else:
+                    element1=-gv.k1*np.linalg.norm(self.state[:2]-center)
+                    element2=-gv.k2*np.linalg.norm(self.target-center)
+                    lamda_matrix[i,j]=math.exp(element1+element2)
+                    self.benefit_matrix[i,j]=(1-self.infomap[i,j])*(gv.rohgamma+(1-gv.rohgamma)*lamda_matrix[i,j])
+        return self.benefit_matrix
+
+
+
 
 
 
@@ -219,4 +243,10 @@ if __name__=="__main__":
 
     a=np.array([1,2])
     b=np.array([3,4])
+
+    # test benefit_value function
+    benefit_value=gv.robotList[1].benefit_value()
+    print(benefit_value)
+    print(len(benefit_value))
+    print(len(benefit_value[0]))
 
