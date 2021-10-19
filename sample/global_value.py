@@ -32,5 +32,8 @@ T=30 # total simulation time
 step_size=0.01 #
 Iteration=int(T/step_size) # total iteration number
 
+# map information
+grid_map=[]
+
 
 
