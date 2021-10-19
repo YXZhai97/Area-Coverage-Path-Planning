@@ -35,3 +35,8 @@ import numpy as np
 a=np.zeros((4,6,6))
 a[1,3,5]=2
 print(a[1])
+b=np.zeros((10,4))
+b[0,:2]=[1,2]
+print(b)
+n=np.array(b)[0,:2]
+print(n)
