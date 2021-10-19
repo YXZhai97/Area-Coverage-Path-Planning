@@ -24,12 +24,13 @@ class Robot:
         self.infomap = np.zeros((gv.x_n,gv.y_n))
         self.tarobsmap=np.zeros((gv.x_n,gv.y_n))
         # initial_state=[x,y,v_x,v_y]
-        self.initial_state = np.zeros((2 * self.dimension))
-        self.state = np.zeros((1,4))
+        self.initial_state = np.zeros(2 * self.dimension)
+        self.state = np.zeros((gv.Iteration, 2*self.dimension))
         self.neighbour = []
+        self.beta_neighbour=[]
         # target position [x,y], no velocity target
-        self.initial_target=np.zeros((self.dimension))
-        self.target=np.zeros((self.dimension))
+        self.initial_target=np.zeros(self.dimension)
+        self.target=np.zeros((gv.Iteration, self.dimension))
         # benefit matrix row and column equal env_map dimension
         self.benefit_matrix=np.zeros((gv.x_n, gv.y_n))
         Robot.add_agent()  # call the class method when initialize the object
@@ -74,6 +75,8 @@ class Robot:
             if flag==i:
                 gv.robotList[i].initial_state[0] = x_i
                 gv.robotList[i].initial_state[1] = y_i
+                # the initial state is [x,y,0,0] with initial velocity 0
+                gv.robotList[i].state[0,:]=[x_i,y_i,0,0]
                 break
 
     def random_init_target(self):
@@ -96,6 +99,8 @@ class Robot:
         # todo
         self.initial_target[0]=round(x)
         self.initial_target[1]=round(y)
+        # 0 row of target matrix is the random initial target
+        self.target[0]=self.initial_target
 
 
     def update_state(self):
@@ -103,7 +108,7 @@ class Robot:
 
 
 
-    def get_neighbour(self):
+    def get_neighbour(self,time):
         '''
 
         Returns: a list containing the robot's neighbour robots
@@ -112,19 +117,19 @@ class Robot:
         # get the id of the robot
         i=self.id
         # the current state of the robot
-        q_i=np.array(self.state[:2])
+        q_i=np.array(self.state)[time, :2]
 
         # find the neighbour in the robotList
         for r in gv.robotList:
             j=r.id
-            q_j=np.array(r.state[:2])
+            q_j=np.array(r.state)[time, :2]
             # check the distance within communication range
             if i!=j and np.linalg.norm(q_j-q_i)<self.rc:
                 self.neighbour.append(r)
         return self.neighbour
 
 
-    def control_input(self):
+    def control_input(self,time):
         # control input is two dimensional vector
         u = np.zeros((1, self.dimension))
         # control input has 3 parts
@@ -132,23 +137,23 @@ class Robot:
         u_beta = np.zeros((1, self.dimension))
         u_gamma = np.zeros((1, self.dimension))
         i=self.id
-        # position of the robot i
-        q_i = np.array(self.state[:2])
+        # position of the robot i at time t
+        q_i = np.array(self.state[time,:2])
         # velocity of robot i
-        v_i = np.array((self.state[2:]))
+        v_i = np.array(self.state[time,2:])
         A = m.adjacency_alpha(gv.robotList)
         print(A)
-        neighbour = self.get_neighbour()
+        neighbour = self.get_neighbour(time)
 
         for robot_j in neighbour:
             j = robot_j.id
             a_ij = A[i,j]
             # position and velocity of robot j
-            q_j = np.array(robot_j.state[:2])
-            v_j = np.array(robot_j.state[2:])
+            q_j = np.array(robot_j.state)[time,:2]
+            v_j = np.array(robot_j.state)[time,2:]
             u_alpha_j_1=gv.c1_alpha*m.phi_alpha(m.sigma_norm(q_j-q_i))*m.norm_direction(q_i,q_j)
             u_alpha_j_2=gv.c2_alpha*a_ij*(v_j-v_i)
-            u_alpha+=u_alpha_j_1
+            u_alpha+=u_alpha_j_1+u_alpha_j_2
 
         u=u_alpha+u_beta+u_gamma
 
@@ -169,12 +174,56 @@ class Robot:
                 if self.tarobsmap[i,j]<0:
                     self.benefit_matrix[i,j]=0
                 else:
-                    element1=-gv.k1*np.linalg.norm(self.state[:2]-center)
+                    element1=-gv.k1*np.linalg.norm(self.state[time,:2]-center)
                     element2=-gv.k2*np.linalg.norm(self.target-center)
                     lamda_matrix[i,j]=math.exp(element1+element2)
                     self.benefit_matrix[i,j]=(1-self.infomap[i,j])*(gv.rohgamma+(1-gv.rohgamma)*lamda_matrix[i,j])
         return self.benefit_matrix
 
+    def update_info_map(self,time):
+        q=np.array(self.state[time,:2])
+        for x in range(gv.x_n):
+            for y in range(gv.y_n):
+                # calculate the cell center position
+                x_center=gv.grid_length/2+x*gv.grid_length
+                y_center=gv.grid_length/2+y*gv.grid_length
+                cell_center=np.array([x_center,y_center])
+
+                # calculate the distance between cell center and robot position
+                distance=np.linalg.norm(q-cell_center)
+
+                # mark the visited area in info_map
+                if distance<self.rs:
+                    self.infomap[x,y]=1
+
+                if distance<self.rs and gv.env_map[x,y]==1:
+                    self.tarobsmap[x,y]=-1
+
+
+    def get_beta_agent(self,time):
+        # robot current sate
+        q=np.array(self.state)[time,:2]
+
+        # find the closest point on obstacle
+        close_distance=self.rs
+        for x in range(gv.x_n):
+            for y in range(gv.y_n):
+                if self.tarobsmap[x,y]==-1:
+                    x_center = gv.grid_length / 2 + x * gv.grid_length
+                    y_center = gv.grid_length / 2 + y * gv.grid_length
+                    cell_center=np.array([x_center,y_center])
+                    distance=np.linalg.norm(q-cell_center)
+                    # update the closest point
+                    if distance<close_distance:
+                        close_distance=distance
+                        beta_index=[x,y]
+
+        # get the position of the beta agent
+        self.beta_neighbour[0]=gv.grid_length / 2 + beta_index[0] * gv.grid_length
+        self.beta_neighbour[1] = gv.grid_length / 2 + beta_index[1] * gv.grid_length
+
+        # get the velocity projection of the beta agent
+        #todo
 
 
 
@@ -182,9 +231,29 @@ class Robot:
 
 
 
-class BetaAgent():
-    def __init__(self):
-        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -227,19 +296,20 @@ if __name__=="__main__":
     plt.show()
 
     # test get_neighbour()
-    gv.robotList[0].state=[24,56,0,0]
-    gv.robotList[1].state = [2, 56, 0, 0]
-    gv.robotList[2].state = [90, 56, 0, 0]
-    gv.robotList[3].state = [100, 60, 0, 0]
-    gv.robotList[4].state = [53, 56, 0, 0]
-    gv.robotList[5].state = [54, 90, 0, 0]
-    print(gv.robotList[2].get_neighbour())
+    gv.robotList[0].state[1]=[24,56,0,0]
+    gv.robotList[1].state[1]= [2, 56, 0, 0]
+    gv.robotList[2].state[1] = [90, 56, 0, 0]
+    gv.robotList[3].state[1]= [100, 60, 0, 0]
+    gv.robotList[4].state[1] = [53, 56, 0, 0]
+    gv.robotList[5].state[1]= [54, 90, 0, 0]
+    time=1
+    print(gv.robotList[2].get_neighbour(time))
     print(gv.robotList[5])
     print(gv.robotList[2].neighbour)
     print(m.adjacency_alpha(gv.robotList))
 
     # test control input
-    print(gv.robotList[2].control_input())
+    print(gv.robotList[2].control_input(1))
 
     a=np.array([1,2])
     b=np.array([3,4])
@@ -249,4 +319,11 @@ if __name__=="__main__":
     print(benefit_value)
     print(len(benefit_value))
     print(len(benefit_value[0]))
+
+    # test update infomap
+    mymap = env.EnvMap(300, 300, 1)
+    mymap.add_circle(90, 60, 45)
+    gv.env_map=mymap.grid_map
+    gv.robotList[1].update_info_map(1)
+    print(gv.robotList[1].infomap)
 
