@@ -32,11 +32,17 @@
 
 import numpy as np
 
-a=np.zeros((4,6,6))
-a[1,3,5]=2
-print(a[1])
-b=np.zeros((10,4))
-b[0,:2]=[1,2]
-print(b)
-n=np.array(b)[0,:2]
-print(n)
+# a=np.zeros((4,6,6))
+# a[1,3,5]=2
+# print(a[1])
+# b=np.zeros((10,4))
+# b[0,:2]=[1,2]
+# print(b)
+# n=np.array(b)[0,:2]
+# print(n)
+
+neighbour=[[1,2,3,4],[5,6,7,8]]
+for n in neighbour:
+    print(n)
+print(len(neighbour))
+
