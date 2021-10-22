@@ -48,6 +48,8 @@ def nearest_beta(grid: List[List[int]], state: List[int]) -> List[int]:
             if grid[r][c] == -1 and (r, c) not in visit:
                 beta_neighbour.append(bfs(r, c))
 
+
+
     return beta_neighbour
 
 
