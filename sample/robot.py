@@ -12,7 +12,7 @@ import math
 import global_value as gv
 import env_map as env
 import methods as m
-
+import collections
 
 class Robot:
     number_of_robot = 0
@@ -33,6 +33,7 @@ class Robot:
         self.neighbour = []
 
         # beta neighbour [[],[],[]] a list of list
+        # beta neighbout [[x1,y1,vx1,vy1],[x2,y2,vx2,vy2]]
         self.beta_neighbour = []
 
         # target position [x,y], no velocity target
@@ -162,8 +163,9 @@ class Robot:
             u_alpha += u_alpha_j_1 + u_alpha_j_2
 
         # calculate the influence of beta_agent
-        for k in range(len(self.beta_neighbour)):
-            beta = self.beta_neighbour[k]
+        # first get the neighbour
+        self.get_beta(time)
+        for beta in self.beta_neighbour:
             q_beta = np.array(beta[:2])
             v_beta = np.array(beta[2:])
             b_ij = B[i, k]
@@ -247,6 +249,88 @@ class Robot:
         beta_state = [beta_x, beta_y, beta_vx, beta_vy]
         # add the beta_state to beta_neighbour list
         self.beta_neighbour.append(beta_state)
+
+
+    # get the nearest beta point on k obstacle around the robot
+    def get_beta(self,time) :
+        grid=self.tarobsmap
+        rows, cols = len(grid), len(grid[0])
+        visit = set()
+        beta_neighbour = []
+        grid_length = gv.grid_length
+        rs = self.rs
+
+        # the position and velocity of the robot
+        position=np.array(self.state[time,:2])
+        velocity=np.array(self.state[time,2:])
+
+
+        def get_center(row, col):
+            x_center = grid_length / 2 + row * grid_length
+            y_center = grid_length / 2 + col * grid_length
+            cell_center = np.array([x_center, y_center])
+            return cell_center
+
+        def bfs(r, c):
+            q = collections.deque()
+            visit.add((r, c))
+            q.append((r, c))
+            min_distance = rs
+
+            while q:
+                row, col = q.popleft()
+                center = get_center(row, col)
+                distance = np.linalg.norm(position - center)
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_neighbour = center
+
+                directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+                for dr, dc in directions:
+                    r, c = row + dr, col + dc
+                    if (r in range(rows) and
+                            c in range(cols) and
+                            grid[r][c] == -1 and
+                            (r, c) not in visit):
+                        q.append((r, c))
+                        visit.add((r, c))
+            return nearest_neighbour
+
+        def v_projection(p,p_beta,v):
+            '''
+            Args:
+                p: current robot position
+                p_beta: beta agent position
+                v: current robot velocity
+            Returns: robot velocity projection
+            '''
+            p = np.array(p)
+            p_beta = np.array((p_beta))
+            # identity matrix with dimension 2
+            I = np.identity(self.dimension)
+            # a_k is unit normal vector
+            a_k = (p - p_beta) / np.linalg.norm(p - p_beta)
+            # projection matrix
+            proj_matrix = I - np.outer(a_k, a_k.T)
+            # project velocity
+            v_proj = np.dot(v, proj_matrix)
+            return v_proj
+
+
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == -1 and (r, c) not in visit:
+                    beta_neighbour.append(bfs(r, c))
+
+        for p_beta in beta_neighbour:
+            v_proj=v_projection(position,p_beta,velocity)
+            # add the velocity to the vector
+            p_beta.append(v_proj[0])
+            p_beta.append(v_proj[1])
+
+
+        self.beta_neighbour = beta_neighbour
+        return beta_neighbour
 
 
 def define_robot(number):
