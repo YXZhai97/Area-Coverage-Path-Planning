@@ -46,3 +46,16 @@ for n in neighbour:
     print(n)
 print(len(neighbour))
 
+testM=np.array([[1,2,3,4],
+       [3,4,5,6]])
+
+print(testM[-1])
+newrow=np.zeros(4)
+testM=np.append(testM,[newrow],axis=0)
+print(testM)
+
+a=[1,2]
+b=[3,4]
+a[0],b[0]=b[0],a[0]
+a[1],b[1]=b[1],a[1]
+print(a,b)
