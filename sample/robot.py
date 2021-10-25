@@ -112,13 +112,13 @@ class Robot:
         self.target[0] = self.initial_target
 
     def update_state(self):
+
+        #todo
         pass
 
     def get_neighbour(self, time):
         '''
-
         Returns: a list containing the robot's neighbour robots
-
         '''
         # get the id of the robot
         i = self.id
@@ -133,6 +133,7 @@ class Robot:
             if i != j and np.linalg.norm(q_j - q_i) < self.rc:
                 self.neighbour.append(r)
         return self.neighbour
+
 
     def control_input(self, time):
         # control input is two dimensional vector
@@ -168,19 +169,33 @@ class Robot:
         for beta in self.beta_neighbour:
             q_beta = np.array(beta[:2])
             v_beta = np.array(beta[2:])
-            b_ij = B[i, k]
+            # todo ajacency matrix B
+            b_ij = B[i, k] # i and k
             u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
             u_beta_k_2 = gv.c2_beta * b_ij * (v_beta - v_i)
             u_beta += u_beta_k_1 + u_beta_k_2
 
         # calculate the influence of gamma_agent
-        # todo gamma influence
+        # target is Iteration*2 dimensional matrix
+        q_target=self.target[time]
+        u_gamma=-gv.c1_gamma*(q_i-q_target)-gv.c2_gamma*v_i
 
+        # limit gamma attraction
+        norm_u_gamma=np.linalg.norm(u_gamma)
+        if norm_u_gamma>150:
+            u_gamma=150*u_gamma/norm_u_gamma
+
+        # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
+
+        # limit the acceleration
+        norm_u=np.linalg.norm(u)
+        if norm_u>100:
+            u=100*u/norm_u
 
         return u
 
-    def benefit_value(self):
+    def benefit_value(self, time):
         lamda_matrix = np.zeros((gv.x_n, gv.y_n))
         for i in range(gv.x_n):
             for j in range(gv.y_n):
@@ -198,6 +213,160 @@ class Robot:
                     self.benefit_matrix[i, j] = (1 - self.infomap[i, j]) * (
                                 gv.rohgamma + (1 - gv.rohgamma) * lamda_matrix[i, j])
         return self.benefit_matrix
+
+    # get the maximum value in benefit_matrix
+    def update_target(self,time):
+
+        '''
+        Args:
+            time: get the time step
+        Returns: return the maximum value from the benefit_matrix
+        '''
+
+        # get the current state and information map
+        #robot state
+        q_i=self.state[time,:2]
+        infomap=self.infomap
+        tarobsmap=self.tarobsmap
+        cur_target=self.target[time]
+
+        # recalculation criteria
+        a, b, c = 0, 0, 0
+
+        # first criteria
+        if m.sigma_norm(q_i-cur_target)<m.sigma_norm(self.rs) or time==1:
+            a = 1
+
+        # calculate the row and col of the last target
+        row = int((cur_target[0]-gv.grid_length/2)/gv.grid_length)
+        col = int((cur_target[1] - gv.grid_length/2) / gv.grid_length)
+
+        # second criteria
+        if infomap[row,col]!=0 or tarobsmap[row,col]!=0:
+            b=1
+
+        # third criteria
+        neighbour=self.get_neighbour(time)
+        for robot_j in neighbour:
+            q_j = robot_j.state[time,:2]
+            cur_target_j=robot_j.target[time]
+            if m.sigma_norm(cur_target-cur_target_j)<self.rs and m.sigma_norm(q_j-cur_target_j)<m.sigma_norm(q_i-cur_target):
+                c=1
+                break
+
+        def get_center(row, col):
+            x_center = grid_length / 2 + row * grid_length
+            y_center = grid_length / 2 + col * grid_length
+            cell_center = np.array([x_center, y_center])
+            return cell_center
+
+        # if recalculation condition fulfilled
+        if a==1 or b==1 or c==1:
+
+            # create a priority queue
+            # the queue stores [x,y,benefit_value]
+            b_value_que=np.zeros((1,3))
+
+            b_value=self.benefit_value(time)
+
+            n_neighbour=len(neighbour)
+            # if the robot has neighbour robot
+
+
+            for x in range(gv.x_n):
+                for y in range(gv.y_n):
+                    center=get_center(x,y)
+                    if n_neighbour>0:
+                        for robot_j in neighbour:
+                            q_j = robot_j.state[time, :2]
+                            if m.sigma_norm(center-q_j)>=m.sigma_norm(center-q_i)>self.rs:
+                                center.append(b_value[x,y])
+                                # set the last row of Xi_que [x,y,benefit_value]
+                                # append the queue with [0,0,0]
+                                b_value_que[-1]=center
+                                newrow = np.zeros(3)
+                                b_value_que = np.append(b_value_que, [newrow], axis=0)
+
+                    # if the robot has no neighbour at all
+                    elif m.sigma_norm(center-q_i)>rs:
+                        m.sigma_norm(center-q_i)>rs:
+                        center.append(b_value[x, y])
+                        b_value_que[-1] = center
+                        newrow = np.zeros(3)
+                        b_value_que = np.append(b_value_que, [newrow], axis=0)
+
+            # get the max value from the b_value_que
+            max_b_value=b_value_que[0]
+            for i in range(1,len(b_value_que)):
+                if b_value_que[i,2]>max_b_value[2]:
+                    max_b_value=b_value_que[i]
+
+            if max_b_value[2]>0:
+                new_target=max_b_value[:2]
+            else:
+                new_target=cur_target
+
+        # when the first three criteria does not work
+        else:
+            for robot_j in neighbour:
+                q_j=robot_j.state[time,:2]
+                cur_target_j=robot_j.target[time]
+                if (m.sigma_norm(q_i-cur_target_j)<m.sigma_norm(q_i-cur_target) and
+                    m.sigma_norm(q_i-cur_target_j)<m.sigma_norm(q_j-cur_target_j)):
+                    # exchange target i and j
+                    new_target=cur_target_j
+                    robot_j.target[time+1]=cur_target
+                else:
+                    new_target=cur_target
+
+        self.target[time+1]=new_target
+        return new_target
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def update_info_map(self, time):
         q = np.array(self.state[time, :2])
@@ -218,37 +387,37 @@ class Robot:
                 if distance < self.rs and gv.env_map[x, y] == 1:
                     self.tarobsmap[x, y] = -1
 
-    def get_beta_agent(self, time):
-        # robot current sate
-        q = np.array(self.state)[time, :2]
-
-        # find the closest point on obstacle
-        close_distance = self.rs
-        for x in range(gv.x_n):
-            for y in range(gv.y_n):
-                if self.tarobsmap[x, y] == -1:
-                    x_center = gv.grid_length / 2 + x * gv.grid_length
-                    y_center = gv.grid_length / 2 + y * gv.grid_length
-                    cell_center = np.array([x_center, y_center])
-                    distance = np.linalg.norm(q - cell_center)
-                    # update the closest point
-                    # set the closest point as beta neighbour
-                    # how to tell the point on different obstacle
-                    # todo
-                    if distance < close_distance:
-                        close_distance = distance
-                        beta_index = [x, y]
-
-        # get the position of the beta agent
-        beta_x = gv.grid_length / 2 + beta_index[0] * gv.grid_length
-        beta_y = gv.grid_length / 2 + beta_index[1] * gv.grid_length
-
-        # get the velocity projection of the beta agent
-        beta_vx = 0
-        beta_vy = 0
-        beta_state = [beta_x, beta_y, beta_vx, beta_vy]
-        # add the beta_state to beta_neighbour list
-        self.beta_neighbour.append(beta_state)
+    # def get_beta_agent(self, time):
+    #     # robot current sate
+    #     q = np.array(self.state)[time, :2]
+    #
+    #     # find the closest point on obstacle
+    #     close_distance = self.rs
+    #     for x in range(gv.x_n):
+    #         for y in range(gv.y_n):
+    #             if self.tarobsmap[x, y] == -1:
+    #                 x_center = gv.grid_length / 2 + x * gv.grid_length
+    #                 y_center = gv.grid_length / 2 + y * gv.grid_length
+    #                 cell_center = np.array([x_center, y_center])
+    #                 distance = np.linalg.norm(q - cell_center)
+    #                 # update the closest point
+    #                 # set the closest point as beta neighbour
+    #                 # how to tell the point on different obstacle
+    #                 # todo
+    #                 if distance < close_distance:
+    #                     close_distance = distance
+    #                     beta_index = [x, y]
+    #
+    #     # get the position of the beta agent
+    #     beta_x = gv.grid_length / 2 + beta_index[0] * gv.grid_length
+    #     beta_y = gv.grid_length / 2 + beta_index[1] * gv.grid_length
+    #
+    #     # get the velocity projection of the beta agent
+    #     beta_vx = 0
+    #     beta_vy = 0
+    #     beta_state = [beta_x, beta_y, beta_vx, beta_vy]
+    #     # add the beta_state to beta_neighbour list
+    #     self.beta_neighbour.append(beta_state)
 
 
     # get the nearest beta point on k obstacle around the robot
