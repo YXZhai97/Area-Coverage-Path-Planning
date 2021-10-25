@@ -14,6 +14,9 @@ c1_alpha=60
 c2_alpha=2*math.sqrt(c1_alpha)
 c1_beta=60
 c2_beta=2*math.sqrt(c1_beta)
+c1_gamma=30
+c2_gamma=2*math.sqrt(c1_gamma)
+
 
 # grid map property
 x_bound=300
