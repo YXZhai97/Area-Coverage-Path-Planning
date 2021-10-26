@@ -1,12 +1,9 @@
 import math
 
-robotList=[]
+# robot parameters
+robotList=[] # a list of robot
 d_alpha=12
 d_beta=6
-x_bound=300
-y_bound=300
-v_bound=2
-env_map=[]
 epsilon=0.08
 h_alpha=0.2
 h_beta=0.9
@@ -17,26 +14,30 @@ c2_beta=2*math.sqrt(c1_beta)
 c1_gamma=30
 c2_gamma=2*math.sqrt(c1_gamma)
 
+# robot map information
+grid_map=[]
 
-# grid map property
+# environment parameters
 x_bound=300
 y_bound=300
+v_bound=2
 grid_length=3
 x_n=int(x_bound/grid_length)
 y_n=int(y_bound/grid_length)
+env_map=[]
+
 
 # value in benefit function
 k1=0.04
 k2=0.01
 rohgamma=0.2
 
-# simulation
+# simulation parameters
 T=30 # total simulation time
-step_size=0.01 #
+step_size=0.01 # size of each step
 Iteration=int(T/step_size) # total iteration number
 
-# map information
-grid_map=[]
+
 
 
 
