@@ -288,8 +288,7 @@ class Robot:
                                 b_value_que = np.append(b_value_que, [newrow], axis=0)
 
                     # if the robot has no neighbour at all
-                    elif m.sigma_norm(center-q_i)>rs:
-                        m.sigma_norm(center-q_i)>rs:
+                    elif m.sigma_norm(center-q_i) > self.rs:
                         center.append(b_value[x, y])
                         b_value_que[-1] = center
                         newrow = np.zeros(3)
@@ -324,52 +323,18 @@ class Robot:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def update_info_map(self, time):
+
+        '''
+        Args:
+            time: give the time step as input
+        Returns: no return currently, but the self.infomap and self.tarobsmap is updated
+        '''
+
+        # get the current state
         q = np.array(self.state[time, :2])
+
+        # update the infomap and tarobsmap inside rs
         for x in range(gv.x_n):
             for y in range(gv.y_n):
                 # calculate the cell center position
@@ -386,6 +351,20 @@ class Robot:
 
                 if distance < self.rs and gv.env_map[x, y] == 1:
                     self.tarobsmap[x, y] = -1
+
+        # consider communication and map info exchange between robots with in rc
+        neighbour=self.get_neighbour(time)
+        for robot_j in neighbour:
+            for x in range(gv.x_n):
+                for y in range(gv.y_n):
+                    if robot_j.infomap[x,y]>self.infomap[x,y]:
+                        self.infomap[x,y]=robot_j.infomap[x,y]
+
+                    if robot_j.tarobsmap[x,y]!=0 and self.tarobsmap[x,y]==0:
+                        self.tarobsmap[x,y]=robot_j.tarobsmap[x,y]
+
+
+
 
     # def get_beta_agent(self, time):
     #     # robot current sate
@@ -511,6 +490,26 @@ def define_robot(number):
     """
     for i in range(number):
         gv.robotList.append(Robot())
+
+# show the robot initial state and target in plot
+def show_robot(robotList):
+    for robot in robotList:
+        robot.random_init_state()
+        robot.random_init_target()
+        plt.scatter(robot.initial_state[0], robot.initial_state[1])
+        plt.scatter(robot.initial_target[0], robot.initial_target[1], marker='*', color='black')
+        plt.annotate(robot.id, (robot.initial_state[0], robot.initial_state[1]))
+        plt.annotate(robot.id, (robot.initial_target[0], robot.initial_target[1]))
+        print('initial state:', robot.initial_state)
+        print('initial target:', robot.initial_target)
+    plt.title('The initial state of robots')
+    # add x-label
+    plt.xlabel('x-coordinate')
+    # add y label
+    plt.ylabel('y-coordinate')
+    # save image to the image folder
+    # plt.savefig('../image/initial_state.png')
+    plt.show()
 
 
 if __name__ == "__main__":
