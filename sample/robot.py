@@ -51,7 +51,7 @@ class Robot:
     def random_init_state(self):
         """
 
-        Returns: set self.initial_state a random value [x,y] inside boundary
+        Returns: set self.initial_state a random value [x,y,0,0] inside boundary
 
         """
         # Define initial velocity v_x, v_y
@@ -84,6 +84,7 @@ class Robot:
             if flag == i:
                 gv.robotList[i].initial_state[0] = x_i
                 gv.robotList[i].initial_state[1] = y_i
+
                 # the initial state is [x,y,0,0] with initial velocity 0
                 gv.robotList[i].state[0, :] = [x_i, y_i, 0, 0]
                 break
@@ -255,8 +256,8 @@ class Robot:
                 break
 
         def get_center(row, col):
-            x_center = grid_length / 2 + row * grid_length
-            y_center = grid_length / 2 + col * grid_length
+            x_center = gv.grid_length / 2 + row * gv.grid_length
+            y_center = gv.grid_length / 2 + col * gv.grid_length
             cell_center = np.array([x_center, y_center])
             return cell_center
 
@@ -271,7 +272,6 @@ class Robot:
 
             n_neighbour=len(neighbour)
             # if the robot has neighbour robot
-
 
             for x in range(gv.x_n):
                 for y in range(gv.y_n):
@@ -320,8 +320,6 @@ class Robot:
 
         self.target[time+1]=new_target
         return new_target
-
-
 
     def update_info_map(self, time):
 
@@ -398,7 +396,6 @@ class Robot:
     #     # add the beta_state to beta_neighbour list
     #     self.beta_neighbour.append(beta_state)
 
-
     # get the nearest beta point on k obstacle around the robot
     def get_beta(self,time) :
         grid=self.tarobsmap
@@ -464,7 +461,6 @@ class Robot:
             v_proj = np.dot(v, proj_matrix)
             return v_proj
 
-
         for r in range(rows):
             for c in range(cols):
                 if grid[r][c] == -1 and (r, c) not in visit:
@@ -475,7 +471,6 @@ class Robot:
             # add the velocity to the vector
             p_beta.append(v_proj[0])
             p_beta.append(v_proj[1])
-
 
         self.beta_neighbour = beta_neighbour
         return beta_neighbour
@@ -494,14 +489,13 @@ def define_robot(number):
 # show the robot initial state and target in plot
 def show_robot(robotList):
     for robot in robotList:
-        robot.random_init_state()
-        robot.random_init_target()
         plt.scatter(robot.initial_state[0], robot.initial_state[1])
         plt.scatter(robot.initial_target[0], robot.initial_target[1], marker='*', color='black')
         plt.annotate(robot.id, (robot.initial_state[0], robot.initial_state[1]))
         plt.annotate(robot.id, (robot.initial_target[0], robot.initial_target[1]))
         print('initial state:', robot.initial_state)
         print('initial target:', robot.initial_target)
+
     plt.title('The initial state of robots')
     # add x-label
     plt.xlabel('x-coordinate')

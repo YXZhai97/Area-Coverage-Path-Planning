@@ -168,7 +168,7 @@ class EnvMap:
 
         '''
 
-        # define the color
+        # define the color map
         color_map = {1: np.array([0, 0, 0]),  # 1 is obstacle filled with black color
                      0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
 
@@ -179,6 +179,13 @@ class EnvMap:
         for i in range(self.x_n):
             for j in range(self.y_n):
                 data_3d[i][j] = color_map[self.grid_map[i][j]]
+
+        # add label
+        plt.xlabel("Y coordinate [m]")
+        plt.ylabel("X coordinate [m]")
+        plt.title("2D grid map")
+
+        # show image
         plt.imshow(data_3d)
         plt.show()
 
