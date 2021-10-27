@@ -54,4 +54,6 @@ newrow=np.zeros(4)
 testM=np.append(testM,[newrow],axis=0)
 print(testM)
 
+a=np.array([1,2,3])
+print(a*0.1)
 

@@ -112,10 +112,18 @@ class Robot:
         # 0 row of target matrix is the random initial target
         self.target[0] = self.initial_target
 
-    def update_state(self):
+    def update_state(self,time):
+        # get the current state
+        cur_position=self.state[time,:2]
+        cur_v=self.state[time,2:]
 
-        #todo
-        pass
+        # calculate the deviation
+        d_v=self.control_input(time)*gv.step_size
+        d_position=self.state[time,2:]*gv.step_size
+
+        # add new state vector
+        self.state[time+1,:2]=cur_position+d_position
+        self.state[time+1,2:]=cur_v+d_v
 
     def get_neighbour(self, time):
         '''

@@ -16,15 +16,14 @@ define_robot(3)
 for robot in gv.robotList:
     robot.random_init_state()
     robot.random_init_target()
-
-    print(robot.state[0])
-
+    print(robot.state[0]) # test the initial state has been passed to the state
+    print(robot.target[0])
 show_robot(gv.robotList)
+
 
 # environment initialization
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(300,300,1)
-
 # add a circle
 mymap.add_circle(100,150,30)
 # add a triangle
@@ -32,9 +31,21 @@ mymap.add_circle(100,150,30)
 mymap.show_map()
 
 # iteration
+for time in range(gv.Iteration):
+    for robot in gv.robotList:
+        # get the current state at time
+        robot.update_state(time)
+
+        # update information map
+
+        # calculate benefit value and target
+
+        # update control value
+
+        # again update state
 
 
-# state and map update
+
 
 
 # plot the path
