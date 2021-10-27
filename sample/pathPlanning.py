@@ -31,24 +31,25 @@ mymap.add_circle(100,150,30)
 mymap.show_map()
 
 # iteration
-for time in range(gv.Iteration):
+# todo there is index problem with time+1
+for time in range(gv.Iteration-1):
     for robot in gv.robotList:
-        # get the current state at time
-        robot.update_state(time)
-
         # update information map
-
+        robot.update_info_map(time)
         # calculate benefit value and target
-
-        # update control value
-
-        # again update state
-
-
-
+        robot.update_target(time)
+        # update robot state
+        robot.update_state(time)
 
 
 # plot the path
+for robot in gv.robotList:
+    plt.plot(robot.state[:,0],robot.state[:,1])
+
+plt.savefig('../image/path.png')
+plt.show()
+
+
 # 2D animation
 # 2D static
 
