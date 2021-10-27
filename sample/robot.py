@@ -157,8 +157,7 @@ class Robot:
         # velocity of robot i
         v_i = np.array(self.state[time, 2:])
         A = m.adjacency_alpha(gv.robotList)
-        B = m.adjacency_beta(self.beta_neighbour)
-        print(A)
+        B = m.adjacency_beta(self.beta_neighbour,q_i)
         neighbour = self.get_neighbour(time)
 
         # calculate the influence of alpha neighbour
@@ -175,14 +174,16 @@ class Robot:
         # calculate the influence of beta_agent
         # first get the neighbour
         self.get_beta(time)
+        k=0
         for beta in self.beta_neighbour:
             q_beta = np.array(beta[:2])
             v_beta = np.array(beta[2:])
             # todo ajacency matrix B
-            b_ij = B[i, k] # i and k
+            b_ik = B[k] # i and k
             u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
             u_beta_k_2 = gv.c2_beta * b_ij * (v_beta - v_i)
             u_beta += u_beta_k_1 + u_beta_k_2
+            k+=1
 
         # calculate the influence of gamma_agent
         # target is Iteration*2 dimensional matrix
@@ -238,6 +239,7 @@ class Robot:
         infomap=self.infomap
         tarobsmap=self.tarobsmap
         cur_target=self.target[time]
+        new_target=cur_target
 
         # recalculation criteria
         a, b, c = 0, 0, 0
@@ -283,12 +285,13 @@ class Robot:
 
             for x in range(gv.x_n):
                 for y in range(gv.y_n):
-                    center=get_center(x,y)
+                    center = get_center(x, y)
                     if n_neighbour>0:
                         for robot_j in neighbour:
+                            center = get_center(x, y)
                             q_j = robot_j.state[time, :2]
-                            if m.sigma_norm(center-q_j)>=m.sigma_norm(center-q_i)>self.rs:
-                                center.append(b_value[x,y])
+                            if m.sigma_norm(center[:2] - q_j) >= m.sigma_norm(center[:2] - q_i) > self.rs:
+                                center=np.append(center,b_value[x,y])
                                 # set the last row of Xi_que [x,y,benefit_value]
                                 # append the queue with [0,0,0]
                                 b_value_que[-1]=center
@@ -297,7 +300,7 @@ class Robot:
 
                     # if the robot has no neighbour at all
                     elif m.sigma_norm(center-q_i) > self.rs:
-                        center.append(b_value[x, y])
+                        center=np.append(center,b_value[x, y])
                         b_value_que[-1] = center
                         newrow = np.zeros(3)
                         b_value_que = np.append(b_value_que, [newrow], axis=0)

@@ -3,7 +3,7 @@ import math
 # robot parameters
 robotList=[] # a list of robot
 d_alpha=12
-d_beta=6
+d_beta=6 # the min distance between beta and alpha
 epsilon=0.08
 h_alpha=0.2
 h_beta=0.9
@@ -34,7 +34,7 @@ rohgamma=0.2
 
 # simulation parameters
 T=30 # total simulation time
-step_size=0.01 # size of each step
+step_size=1 # size of each step
 Iteration=int(T/step_size) # total iteration number
 
 

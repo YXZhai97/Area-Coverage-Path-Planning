@@ -57,3 +57,7 @@ print(testM)
 a=np.array([1,2,3])
 print(a*0.1)
 
+print(np.zeros(4))
+for m in testM:
+    m=np.append(m,1)
+    print(m)

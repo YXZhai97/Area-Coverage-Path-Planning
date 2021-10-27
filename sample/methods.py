@@ -40,9 +40,19 @@ def adjacency_alpha(robot_list):
     return A
 
 
-def adjacency_beta():
-    #todo
-    pass
+def adjacency_beta(beta_neighbour,q_i):
+    n=len(beta_neighbour)
+    B=np.zeros(n)
+    k=0
+    for beta in beta_neighbour:
+        q_beta=beta[:2]
+        B[k]=bump_beta(sigma_norm(q_beta-q_i)/sigma_norm(gv.d_beta))
+        k+=1
+
+    return B
+
+
+
 
 
 def bump_alpha(z):
