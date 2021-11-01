@@ -61,3 +61,9 @@ print(np.zeros(4))
 for m in testM:
     m=np.append(m,1)
     print(m)
+
+a=[1,2,3,4,5]
+b=[6,7,8,9,10]
+
+for i,j in zip(a,b):
+    print(i+j)
