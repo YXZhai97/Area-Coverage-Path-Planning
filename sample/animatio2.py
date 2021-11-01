@@ -13,7 +13,7 @@ class ParticleSimulator:
         self.particles = particles
 
     def evolve(self, dt):
-        timestep = 0.00001
+        timestep = 0.0001
         nsteps = int(dt / timestep)
 
         for i in range(nsteps):
@@ -49,7 +49,7 @@ def visualize(simulator):
         return line
 
     def animate(aa):
-        simulator.evolve(0.01)
+        simulator.evolve(0.1)
         X = [p.x for p in simulator.particles]
         Y = [p.y for p in simulator.particles]
 
@@ -58,10 +58,10 @@ def visualize(simulator):
 
     anim = animation.FuncAnimation(fig,
                                    animate,
-                                   frames=10,
+                                   frames=1,
                                    init_func = init,
                                    blit = True,
-                                   interval = 50)
+                                   interval = 40)
     plt.show()
 
 
