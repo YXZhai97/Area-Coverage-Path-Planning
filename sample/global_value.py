@@ -22,8 +22,8 @@ x_bound=300
 y_bound=300
 v_bound=2
 grid_length=3
-x_n=int(x_bound/grid_length)
-y_n=int(y_bound/grid_length)
+x_n=int(x_bound/grid_length) # number of grid in x direction
+y_n=int(y_bound/grid_length) # number of grid in y direction
 env_map=[]
 
 
@@ -34,7 +34,7 @@ rohgamma=0.2
 
 # simulation parameters
 T=30 # total simulation time
-step_size=1 # size of each step
+step_size=0.5 # size of each step
 Iteration=int(T/step_size) # total iteration number
 
 

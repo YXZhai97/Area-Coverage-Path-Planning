@@ -7,13 +7,13 @@ The main script for path planning
 
 # robot initialization
 # define three robot and initialize the state and target
-define_robot(3)
-for robot in gv.robotList:
+robotList=define_robot(3)
+for robot in robotList:
     robot.random_init_state()
     robot.random_init_target()
     print(robot.state[0])  # test the initial state has been passed to the state
     print(robot.target[0])
-show_robot(gv.robotList)
+show_robot(robotList)
 
 # environment initialization
 # define the 2D map with length 100 width 100 and grid length 1
@@ -27,16 +27,16 @@ mymap.show_map()
 # iteration
 # todo there is index problem with time+1
 for time in range(gv.Iteration - 1):
-    for robot in gv.robotList:
+    for robot in robotList:
         # update information map
         robot.update_info_map(time)
         # calculate benefit value and target
         robot.update_target(time)
         # update robot state
         robot.update_state(time)
-
+    print("Time step:", time)
 # plot the path
-for robot in gv.robotList:
+for robot in robotList:
     plt.plot(robot.state[:, 0], robot.state[:, 1])
 
 plt.savefig('../image/path.png')

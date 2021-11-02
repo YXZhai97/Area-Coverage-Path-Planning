@@ -23,6 +23,8 @@ class Robot:
         self.rs = 10
         self.rc = 60
         self.dimension = 2
+
+        # information map
         self.infomap = np.zeros((gv.x_n, gv.y_n))
         self.tarobsmap = np.zeros((gv.x_n, gv.y_n))
 
@@ -30,11 +32,11 @@ class Robot:
         self.initial_state = np.zeros(2 * self.dimension)
         self.state = np.zeros((gv.Iteration, 2 * self.dimension))
 
-        # alpha neighbour: a list containing robot objects
+        # alpha neighbour: a list containing neighbour robots
         self.neighbour = []
 
         # beta neighbour [[],[],[]] a list of list
-        # beta neighbout [[x1,y1,vx1,vy1],[x2,y2,vx2,vy2]]
+        # beta neighbour [[x1,y1,vx1,vy1],[x2,y2,vx2,vy2]]
         self.beta_neighbour = []
 
         # target position [x,y], no velocity target
@@ -45,6 +47,7 @@ class Robot:
         self.benefit_matrix = np.zeros((gv.x_n, gv.y_n))
         Robot.add_agent()  # call the class method when initialize the object
 
+    # class method to add number of robot
     @classmethod
     def add_agent(cls):
         cls.number_of_robot += 1
@@ -65,6 +68,7 @@ class Robot:
         # Define initial state x, y
         while flag <= i:
             # sample x_i y_i from uniform distribution
+            # todo fix the random initial later
             x_i = np.random.uniform(0, 1) * gv.x_bound
             y_i = np.random.uniform(0, 1) * gv.y_bound
 
@@ -107,7 +111,7 @@ class Robot:
             if x > 0 and y > 0:
                 flag = 0
         # target can also be float, a round may not be necessary
-        # todo
+        # todo delete the round()
         self.initial_target[0] = round(x)
         self.initial_target[1] = round(y)
         # 0 row of target matrix is the random initial target
@@ -225,12 +229,14 @@ class Robot:
         return self.benefit_matrix
 
     # get the maximum value in benefit_matrix
+    # todo review code
     def update_target(self, time):
 
         '''
         Args:
             time: get the time step
-        Returns: return the maximum value from the benefit_matrix
+        Returns:
+            return the maximum value from the benefit_matrix
         '''
 
         # get the current state and information map
@@ -339,7 +345,8 @@ class Robot:
         '''
         Args:
             time: give the time step as input
-        Returns: no return currently, but the self.infomap and self.tarobsmap is updated
+        Returns:
+            no return, but the self.infomap and self.tarobsmap is updated
         '''
 
         # get the current state
@@ -358,21 +365,24 @@ class Robot:
 
                 # mark the visited area in info_map
                 if distance < self.rs:
-                    self.infomap[x, y] = 1
+                    self.infomap[y, x] = 1
 
-                if distance < self.rs and gv.env_map[x, y] == 1:
-                    self.tarobsmap[x, y] = -1
+                if distance < self.rs and gv.env_map[y, x] == 1:
+                    self.tarobsmap[y, x] = -1
 
         # consider communication and map info exchange between robots with in rc
         neighbour = self.get_neighbour(time)
         for robot_j in neighbour:
             for x in range(gv.x_n):
                 for y in range(gv.y_n):
-                    if robot_j.infomap[x, y] > self.infomap[x, y]:
-                        self.infomap[x, y] = robot_j.infomap[x, y]
+                    if robot_j.infomap[y, x] > self.infomap[y, x]:
+                        self.infomap[y, x] = robot_j.infomap[y, x]
 
-                    if robot_j.tarobsmap[x, y] != 0 and self.tarobsmap[x, y] == 0:
-                        self.tarobsmap[x, y] = robot_j.tarobsmap[x, y]
+                    if robot_j.tarobsmap[y, x] != 0 and self.tarobsmap[y, x] == 0:
+                        self.tarobsmap[y, x] = robot_j.tarobsmap[y, x]
+
+                    if robot_j.tarobsmap[y, x] == 0 and self.tarobsmap[y, x] != 0:
+                        robot_j.tarobsmap[y, x] = self.tarobsmap[y, x]
 
     # def get_beta_agent(self, time):
     #     # robot current sate
@@ -456,7 +466,8 @@ class Robot:
                 p: current robot position
                 p_beta: beta agent position
                 v: current robot velocity
-            Returns: robot velocity projection
+            Returns:
+                robot velocity projection
             '''
             p = np.array(p)
             p_beta = np.array((p_beta))
@@ -490,10 +501,13 @@ def define_robot(number):
     Args:
         number: The number of agents in the map
 
-    Returns: Append robotList with new instances
+    Returns:
+        Append robotList with new instances
     """
     for i in range(number):
         gv.robotList.append(Robot())
+
+    return gv.robotList
 
 
 # show the robot initial state and target in plot
