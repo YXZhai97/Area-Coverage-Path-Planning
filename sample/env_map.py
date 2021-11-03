@@ -14,14 +14,14 @@ class EnvMap:
         self.x_bound = x_bound
         self.y_bound = y_bound
         self.grid_length = grid_length
-        self.x_n = int(self.x_bound / self.grid_length)
-        self.y_n = int(self.y_bound / self.grid_length)
+        self.x_n = int(self.x_bound / self.grid_length) # number of grid in x direction
+        self.y_n = int(self.y_bound / self.grid_length) # number of grid in y direction
         self.grid_map = self.make_grid(self.x_n, self.y_n)
         gv.env_map=self.grid_map
 
-    def make_grid(self, row, col):
+    def make_grid(self, x_n, y_n):
 
-        return np.zeros((row, col))
+        return np.zeros((y_n, x_n))
 
     def add_circle(self, x_position, y_position, r):
         '''
@@ -139,26 +139,26 @@ class EnvMap:
         for point in points:
             self.grid_map[point[0], point[1]] = 1
 
-    def floodFill(self, sr, sc, newColor):
-
-        R = len(self.grid_map)
-        C = len(self.grid_map[0])
-        color = self.grid_map[sr][sc]
-        if color == newColor: return
-        def dfs(r, c):
-            if self.grid_map[r][c] == color:
-                self.grid_map[r][c] = newColor
-                if r >= 1:
-                    dfs(r - 1, c)
-                if r + 1 < R:
-                    dfs(r + 1, c)
-                if c >= 1:
-                    dfs(r, c - 1)
-                if c + 1 < C:
-                    dfs(r, c + 1)
-
-        dfs(sr, sc)
-        return
+    # def floodFill(self, sr, sc, newColor):
+    #
+    #     R = len(self.grid_map)
+    #     C = len(self.grid_map[0])
+    #     color = self.grid_map[sr][sc]
+    #     if color == newColor: return
+    #     def dfs(r, c):
+    #         if self.grid_map[r][c] == color:
+    #             self.grid_map[r][c] = newColor
+    #             if r >= 1:
+    #                 dfs(r - 1, c)
+    #             if r + 1 < R:
+    #                 dfs(r + 1, c)
+    #             if c >= 1:
+    #                 dfs(r, c - 1)
+    #             if c + 1 < C:
+    #                 dfs(r, c + 1)
+    #
+    #     dfs(sr, sc)
+    #     return
 
     def show_map(self):
         '''
@@ -180,6 +180,7 @@ class EnvMap:
             for j in range(self.y_n):
                 data_3d[i][j] = color_map[self.grid_map[i][j]]
 
+        figure1=plt.figure('2D grid map', figsize=(5,5))
         # add label
         plt.xlabel("Y coordinate [m]")
         plt.ylabel("X coordinate [m]")
@@ -195,5 +196,5 @@ if __name__=="__main__":
     mymap.add_circle(90, 60, 45)
     mymap.add_circle(200,150,30)
     mymap.add_polygon([100,100,160,180,160,250,100,280])
-    mymap.floodFill(90,60,1)
+    # mymap.floodFill(90,60,1)
     mymap.show_map()

@@ -25,8 +25,8 @@ class Robot:
         self.dimension = 2
 
         # information map
-        self.infomap = np.zeros((gv.x_n, gv.y_n))
-        self.tarobsmap = np.zeros((gv.x_n, gv.y_n))
+        self.infomap = np.zeros((gv.y_n, gv.x_n))
+        self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
@@ -44,7 +44,7 @@ class Robot:
         self.target = np.zeros((gv.Iteration, self.dimension))
 
         # benefit matrix row and column equal env_map dimension
-        self.benefit_matrix = np.zeros((gv.x_n, gv.y_n))
+        self.benefit_matrix = np.zeros((gv.y_n, gv.x_n))
         Robot.add_agent()  # call the class method when initialize the object
 
     # class method to add number of robot
@@ -108,7 +108,7 @@ class Robot:
             theta = np.random.random() * 2 * math.pi
             x = center_x + r * math.cos(theta)
             y = center_y + r * math.sin(theta)
-            if x > 0 and y > 0:
+            if gv.x_bound>x > 0 and gv.y_bound>y > 0:
                 flag = 0
         # target can also be float, a round may not be necessary
         # todo delete the round()
@@ -185,7 +185,7 @@ class Robot:
             # todo ajacency matrix B
             b_ik = B[k]  # i and k
             u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
-            u_beta_k_2 = gv.c2_beta * b_ij * (v_beta - v_i)
+            u_beta_k_2 = gv.c2_beta * b_ik * (v_beta - v_i)
             u_beta += u_beta_k_1 + u_beta_k_2
             k += 1
 
@@ -210,7 +210,7 @@ class Robot:
         return u
 
     def benefit_value(self, time):
-        lamda_matrix = np.zeros((gv.x_n, gv.y_n))
+        lamda_matrix = np.zeros((gv.y_n, gv.x_n))
         for i in range(gv.x_n):
             for j in range(gv.y_n):
                 x_center = i * gv.grid_length + 0.5 * gv.grid_length
@@ -218,14 +218,14 @@ class Robot:
                 center = np.array([x_center, y_center])
 
                 # if the current cell is occupied by an obstacle
-                if self.tarobsmap[i, j] < 0:
-                    self.benefit_matrix[i, j] = 0
+                if self.tarobsmap[j, i] < 0:
+                    self.benefit_matrix[j, i] = 0
                 else:
                     element1 = -gv.k1 * np.linalg.norm(self.state[time, :2] - center)
                     element2 = -gv.k2 * np.linalg.norm(self.target - center)
-                    lamda_matrix[i, j] = math.exp(element1 + element2)
-                    self.benefit_matrix[i, j] = (1 - self.infomap[i, j]) * (
-                            gv.rohgamma + (1 - gv.rohgamma) * lamda_matrix[i, j])
+                    lamda_matrix[j, i] = math.exp(element1 + element2)
+                    self.benefit_matrix[i, j] = (1 - self.infomap[j, i]) * (
+                            gv.rohgamma + (1 - gv.rohgamma) * lamda_matrix[j, i])
         return self.benefit_matrix
 
     # get the maximum value in benefit_matrix
@@ -255,8 +255,8 @@ class Robot:
             a = 1
 
         # calculate the row and col of the last target
-        row = int((cur_target[0] - gv.grid_length / 2) / gv.grid_length)
-        col = int((cur_target[1] - gv.grid_length / 2) / gv.grid_length)
+        col = int(cur_target[0] // gv.grid_length)  # x//grid_length is col
+        row = int(cur_target[1] // gv.grid_length)  # y//grid_length is row
 
         # second criteria
         # todo debug row and col out of range
@@ -273,9 +273,9 @@ class Robot:
                 c = 1
                 break
 
-        def get_center(row, col):
-            x_center = gv.grid_length / 2 + row * gv.grid_length
-            y_center = gv.grid_length / 2 + col * gv.grid_length
+        def get_center(x, y):
+            x_center = gv.grid_length / 2 + x * gv.grid_length
+            y_center = gv.grid_length / 2 + y * gv.grid_length
             cell_center = np.array([x_center, y_center])
             return cell_center
 
@@ -299,7 +299,7 @@ class Robot:
                             center = get_center(x, y)
                             q_j = robot_j.state[time, :2]
                             if m.sigma_norm(center[:2] - q_j) >= m.sigma_norm(center[:2] - q_i) > self.rs:
-                                center = np.append(center, b_value[x, y])
+                                center = np.append(center, b_value[y, x])
                                 # set the last row of Xi_que [x,y,benefit_value]
                                 # append the queue with [0,0,0]
                                 b_value_que[-1] = center
@@ -308,7 +308,7 @@ class Robot:
 
                     # if the robot has no neighbour at all
                     elif m.sigma_norm(center - q_i) > self.rs:
-                        center = np.append(center, b_value[x, y])
+                        center = np.append(center, b_value[y, x])
                         b_value_que[-1] = center
                         newrow = np.zeros(3)
                         b_value_que = np.append(b_value_que, [newrow], axis=0)
@@ -512,6 +512,7 @@ def define_robot(number):
 
 # show the robot initial state and target in plot
 def show_robot(robotList):
+    figure0 = plt.figure('robot state ', figsize=(5, 5))
     for robot in robotList:
         plt.scatter(robot.initial_state[0], robot.initial_state[1])
         plt.scatter(robot.initial_target[0], robot.initial_target[1], marker='*', color='black')
@@ -529,6 +530,38 @@ def show_robot(robotList):
     # plt.savefig('../image/initial_state.png')
     plt.show()
 
+def show_infomap(robot):
+    '''
+
+    Args:
+        robot: robot object
+
+    Returns:
+        plot the information map of that robot
+
+    '''
+
+    # define the color map
+    color_map = {1: np.array([250,128,114]),  # 1 is visited area filled with red
+                 0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
+
+    # define a sD matrix to store the color value
+    data_3d = np.ndarray(shape=(gv.y_n, gv.x_n, 3), dtype=int)
+
+    # plot the grid_map with color
+    for i in range(gv.y_n):
+        for j in range(gv.x_n):
+            data_3d[i][j] = color_map[robot.infomap[i][j]]
+
+    # figure = plt.figure('2D grid map', figsize=(5, 5))
+    # add label
+    plt.xlabel("X coordinate [m]")
+    plt.ylabel("Y coordinate [m]")
+    plt.title("Information map of the robot")
+
+    # show image
+    plt.imshow(data_3d)
+    plt.show()
 
 if __name__ == "__main__":
 

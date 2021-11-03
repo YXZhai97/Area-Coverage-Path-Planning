@@ -31,7 +31,7 @@
 # print(sample.floodFill(image, 3, 3, 1))
 
 import numpy as np
-
+import matplotlib.pyplot as plt
 # a=np.zeros((4,6,6))
 # a[1,3,5]=2
 # print(a[1])
@@ -67,3 +67,16 @@ b=[6,7,8,9,10]
 
 for i,j in zip(a,b):
     print(i+j)
+
+print(5//2)
+
+fig1=plt.figure('Figure 1 with subplots', figsize=(10,4))
+subfig1=fig1.add_subplot(121)
+subfig1.plot([1,2,3,4],[5,6,7,8])
+subfig2=fig1.add_subplot(122)
+subfig2.scatter([5,6,7,8],[1,2,3,4])
+
+fig2=plt.figure('Figure 2 with subplots', figsize=(10,4))
+subfig1=fig2.add_subplot(121)
+subfig1.scatter([1,2,3,4],[5,6,7,8])
+

@@ -39,6 +39,10 @@ def visualize(robot_list):
                                  interval=80)
     plt.show()
 
+    return anim
+
+
+
 
 
 

@@ -7,7 +7,7 @@ The main script for path planning
 
 # robot initialization
 # define three robot and initialize the state and target
-robotList=define_robot(3)
+robotList = define_robot(3)
 for robot in robotList:
     robot.random_init_state()
     robot.random_init_target()
@@ -26,7 +26,7 @@ mymap.show_map()
 
 # iteration
 # todo there is index problem with time+1
-for time in range(gv.Iteration - 1):
+for time in range(gv.Iteration-1):
     for robot in robotList:
         # update information map
         robot.update_info_map(time)
@@ -35,13 +35,33 @@ for time in range(gv.Iteration - 1):
         # update robot state
         robot.update_state(time)
     print("Time step:", time)
-# plot the path
-for robot in robotList:
-    plt.plot(robot.state[:, 0], robot.state[:, 1])
 
-plt.savefig('../image/path.png')
+# plot the robot target position
+figure2=plt.figure('robot target position', figsize=(5,5))
+for robot in robotList:
+    # plt.plot(robot.state[:, 0], robot.state[:, 1])
+    plt.scatter(robot.target[:,0],robot.target[:,1])
+plt.savefig('../image/target.png')
 plt.show()
 
+
+# plot the robot path
+figure3=plt.figure('robot path ', figsize=(5,5))
+for robot in robotList:
+    plt.plot(robot.state[:, 0], robot.state[:, 1])
+plt.savefig('../image/path.png')
+
+
+# plot the information map of the robot
+figure4=plt.figure('robot information map ', figsize=(5,5))
+show_infomap(robotList[0])
+
+
 # 2D animation
-visualize(gv.robotList)
+anim=visualize(robotList)
 # 2D static
+
+# todo the boundary is not modeled
+# todo: robot moving out of the boundary
+# todo check the matlab code
+
