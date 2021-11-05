@@ -20,8 +20,13 @@ class EnvMap:
         gv.env_map=self.grid_map
 
     def make_grid(self, x_n, y_n):
+        grid=np.zeros((y_n,x_n))
+        # grid[:,0]=1
+        # grid[0,:]=1
+        # grid[:,-1]=1
+        # grid[-1,:]=1
 
-        return np.zeros((y_n, x_n))
+        return grid
 
     def add_circle(self, x_position, y_position, r):
         '''

@@ -80,3 +80,55 @@ fig2=plt.figure('Figure 2 with subplots', figsize=(10,4))
 subfig1=fig2.add_subplot(121)
 subfig1.scatter([1,2,3,4],[5,6,7,8])
 
+grid=np.zeros((4,4))
+grid[:,1]=1
+print(grid)
+
+a_k=np.array([1,2])
+a=np.array([1,1])
+b=np.array([1,4])
+c=[1,2,3]
+c_n=np.array(b)
+print(c)
+
+norm=np.linalg.norm(a-b)
+print(norm.shape)
+print(a_k.shape)
+print(a_k/norm)
+
+neighbour=[]
+n1=[1,2]
+n2=[3,4]
+neighbour.append(n1)
+neighbour.append(n2)
+print(neighbour)
+for n in neighbour:
+    n.append(0)
+    print(n)
+
+neighbour=[[1,2,3,4]]
+print(len(neighbour))
+
+nn=np.zeros(0)
+print(nn)
+
+nnn=np.array([1,2,3])
+print(2*nnn)
+
+a=np.array([[2,2,3,4],[5,6,7,8]])
+b=[]
+for aa in a:
+    aa = np.append(aa, [1, 2])
+    print(aa)
+    b.append(aa)
+
+print(a)
+print(b)
+print(len(b))
+print(b[1])
+
+fig1 = plt.figure('Figure1',figsize = (6,4))
+fig1.add_subplot(221)
+fig1.plot([1,2,3,4],[5,6,7,8])
+fig1.add_subplot(221)
+fig1.plot([1,2,3,4],[5,6,7,8])

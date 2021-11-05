@@ -18,8 +18,8 @@ c2_gamma=2*math.sqrt(c1_gamma)
 grid_map=[]
 
 # environment parameters
-x_bound=300
-y_bound=300
+x_bound=50
+y_bound=50
 v_bound=2
 grid_length=1
 x_n=int(x_bound/grid_length) # number of grid in x direction
@@ -33,9 +33,11 @@ k2=0.01
 rohgamma=0.2
 
 # simulation parameters
-T=30 # total simulation time
-step_size=0.5 # size of each step
+T=10 # total simulation time
+step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number
+rate=1
+
 
 
 

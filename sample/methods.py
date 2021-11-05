@@ -42,6 +42,8 @@ def adjacency_alpha(robot_list):
 
 def adjacency_beta(beta_neighbour,q_i):
     n=len(beta_neighbour)
+    if n<1:
+        return 0
     B=np.zeros(n)
     k=0
     for beta in beta_neighbour:

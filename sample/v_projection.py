@@ -18,14 +18,16 @@ def velocity_projection(p,p_beta,v):
 
 v_p=velocity_projection([3,5],[4,7],[3,3])
 print(v_p)
-a=np.array([1,2,3])
-p=np.outer(a,a.T)
-print(np.outer(a,a.T))
-print(np.dot(p,a))
+# a=np.array([1,2,3])
+# p=np.outer(a,a.T)
+# print(np.outer(a,a.T))
+# print(np.dot(p,a))
+#
+pp=np.array([[1,2,3],[4,6,8]])
+v=np.array([1,2])
+for i in range(len(pp)):
+    np.append(pp[i], 1)
 
-pp=[[1,2,3],[4,6,8]]
-v=[1,2]
-pp[0].append(v)
 print(pp)
 
 

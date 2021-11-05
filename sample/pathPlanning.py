@@ -17,7 +17,7 @@ show_robot(robotList)
 
 # environment initialization
 # define the 2D map with length 100 width 100 and grid length 1
-mymap = EnvMap(300, 300, 1)
+mymap = EnvMap(50, 50, 1)
 # add a circle
 # mymap.add_circle(100, 150, 30)
 # add a triangle
@@ -41,7 +41,7 @@ figure2=plt.figure('robot target position', figsize=(5,5))
 for robot in robotList:
     # plt.plot(robot.state[:, 0], robot.state[:, 1])
     plt.scatter(robot.target[:,0],robot.target[:,1])
-plt.savefig('../image/target.png')
+plt.savefig('../image/target6.png')
 plt.show()
 
 
@@ -49,19 +49,27 @@ plt.show()
 figure3=plt.figure('robot path ', figsize=(5,5))
 for robot in robotList:
     plt.plot(robot.state[:, 0], robot.state[:, 1])
-plt.savefig('../image/path.png')
+plt.savefig('../image/path6.png')
 
 
 # plot the information map of the robot
-figure4=plt.figure('robot information map ', figsize=(5,5))
+figure4=plt.figure('robot information map ', figsize=(10,10))
+subfig1=figure4.add_subplot(221)
 show_infomap(robotList[0])
+subfig2=figure4.add_subplot(222)
+show_infomap(robotList[1])
+subfig3=figure4.add_subplot(223)
+show_infomap(robotList[2])
+
+plt.savefig('../image/infomap6.png')
+
 
 
 # 2D animation
 anim=visualize(robotList)
 # 2D static
 
-# todo the boundary is not modeled
-# todo: robot moving out of the boundary
+# todo the boundary is not modeled, no need to model the boundary
+# todo: robot moving out of the boundary, as long as the target points inside the boundary
 # todo check the matlab code
 

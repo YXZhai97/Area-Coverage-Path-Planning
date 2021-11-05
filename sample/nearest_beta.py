@@ -10,6 +10,7 @@ def nearest_beta(grid: List[List[int]], state: List[int]) -> List[int]:
     beta_neighbour = []
     grid_length = 2
     rs = 8
+    neighbour=[]
 
     def get_center(row, col):
         x_center = grid_length / 2 + row * grid_length
@@ -24,6 +25,7 @@ def nearest_beta(grid: List[List[int]], state: List[int]) -> List[int]:
         min_distance = rs
 
         while q:
+            nearest_neighbour=[]
             row, col = q.popleft()
             center = get_center(row, col)
             distance = np.linalg.norm(state - center)
@@ -48,9 +50,14 @@ def nearest_beta(grid: List[List[int]], state: List[int]) -> List[int]:
             if grid[r][c] == -1 and (r, c) not in visit:
                 beta_neighbour.append(bfs(r, c))
 
+    for beta in beta_neighbour:
+        if np.any(beta):
+            neighbour.append(beta)
 
+    for beta in neighbour:
+        np.append(beta,[1,2])
 
-    return beta_neighbour
+    return neighbour
 
 
 grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -64,4 +71,4 @@ grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, -1, -1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-print(nearest_beta(grid, [10, 10]))
+print(nearest_beta(grid, [10, 5]))
