@@ -20,8 +20,8 @@ class Robot:
 
     def __init__(self):
         self.id = self.number_of_robot
-        self.rs = 10
-        self.rc = 60
+        self.rs = 5
+        self.rc = 10
         self.dimension = 2
 
         # information map
@@ -104,11 +104,12 @@ class Robot:
         while flag:
             center_x = self.initial_state[0]
             center_y = self.initial_state[1]
-            r = np.random.uniform(self.rs, 6 * self.rs)
+            # todo the range of the initial state
+            r = np.random.uniform(self.rs, 2* self.rs)
             theta = np.random.random() * 2 * math.pi
             x = center_x + r * math.cos(theta)
             y = center_y + r * math.sin(theta)
-            if gv.x_bound>x > 0 and gv.y_bound>y > 0:
+            if gv.x_bound > x > 0 and gv.y_bound > y > 0:
                 flag = 0
         # target can also be float, a round may not be necessary
         # todo delete the round()
@@ -123,8 +124,8 @@ class Robot:
         cur_v = self.state[time, 2:]
 
         # calculate the deviation
-        d_v = self.control_input(time) * gv.step_size
-        d_position = self.state[time, 2:] * gv.step_size
+        d_v = self.control_input(time) * gv.step_size*gv.rate
+        d_position = self.state[time, 2:] * gv.step_size*gv.rate
 
         # add new state vector
         self.state[time + 1, :2] = cur_position + d_position
@@ -149,6 +150,8 @@ class Robot:
         return self.neighbour
 
     def control_input(self, time):
+        beta_neighbour=self.get_beta(time)
+        neighbour=self.get_neighbour(time)
         # control input is two dimensional vector
         u = np.zeros((1, self.dimension))
         # control input has 3 parts
@@ -157,12 +160,13 @@ class Robot:
         u_gamma = np.zeros((1, self.dimension))
         i = self.id
         # position of the robot i at time t
-        q_i = np.array(self.state[time, :2])
+        q_i = self.state[time, :2]
         # velocity of robot i
-        v_i = np.array(self.state[time, 2:])
+        v_i = self.state[time, 2:]
         A = m.adjacency_alpha(gv.robotList)
         B = m.adjacency_beta(self.beta_neighbour, q_i)
-        neighbour = self.get_neighbour(time)
+        # print(B)
+
 
         # calculate the influence of alpha neighbour
         for robot_j in neighbour:
@@ -177,17 +181,20 @@ class Robot:
 
         # calculate the influence of beta_agent
         # first get the neighbour
-        self.get_beta(time)
-        k = 0
-        for beta in self.beta_neighbour:
-            q_beta = np.array(beta[:2])
-            v_beta = np.array(beta[2:])
-            # todo ajacency matrix B
-            b_ik = B[k]  # i and k
-            u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
-            u_beta_k_2 = gv.c2_beta * b_ik * (v_beta - v_i)
-            u_beta += u_beta_k_1 + u_beta_k_2
-            k += 1
+
+        if len(beta_neighbour)>0:
+            k = 0
+            for beta in beta_neighbour:
+                q_beta = np.array(beta)[:2]
+                v_beta = np.array(beta)[2:]
+                # todo ajacency matrix B
+                b_ik = B[k]  # i and k
+                # print(b_ik)
+                u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
+                # u_beta_k_2 = np.multiply((v_beta - v_i),gv.c2_beta * b_ik )
+                u_beta_k_2 = (gv.c2_beta * b_ik) * (v_beta - v_i)
+                u_beta += u_beta_k_1 + u_beta_k_2
+                k += 1
 
         # calculate the influence of gamma_agent
         # target is Iteration*2 dimensional matrix
@@ -201,11 +208,14 @@ class Robot:
 
         # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
-
+        print(u)
         # limit the acceleration
         norm_u = np.linalg.norm(u)
         if norm_u > 100:
             u = 100 * u / norm_u
+
+        print(u)
+        print(norm_u)
 
         return u
 
@@ -222,11 +232,13 @@ class Robot:
                     self.benefit_matrix[j, i] = 0
                 else:
                     element1 = -gv.k1 * np.linalg.norm(self.state[time, :2] - center)
-                    element2 = -gv.k2 * np.linalg.norm(self.target - center)
+                    element2 = -gv.k2 * np.linalg.norm(self.target[time] - center)
                     lamda_matrix[j, i] = math.exp(element1 + element2)
-                    self.benefit_matrix[i, j] = (1 - self.infomap[j, i]) * (
+                    self.benefit_matrix[j, i] = (1 - self.infomap[j, i]) * (
                             gv.rohgamma + (1 - gv.rohgamma) * lamda_matrix[j, i])
+
         return self.benefit_matrix
+
 
     # get the maximum value in benefit_matrix
     # todo review code
@@ -422,16 +434,17 @@ class Robot:
         rows, cols = len(grid), len(grid[0])
         visit = set()
         beta_neighbour = []
+        neighbour=[]
         grid_length = gv.grid_length
         rs = self.rs
 
         # the position and velocity of the robot
-        position = np.array(self.state[time, :2])
-        velocity = np.array(self.state[time, 2:])
+        position = self.state[time, :2]
+        velocity = self.state[time, 2:]
 
         def get_center(row, col):
-            x_center = grid_length / 2 + row * grid_length
-            y_center = grid_length / 2 + col * grid_length
+            x_center = grid_length / 2 + col * grid_length
+            y_center = grid_length / 2 + row * grid_length
             cell_center = np.array([x_center, y_center])
             return cell_center
 
@@ -440,6 +453,7 @@ class Robot:
             visit.add((r, c))
             q.append((r, c))
             min_distance = rs
+            nearest_neighbour = []
 
             while q:
                 row, col = q.popleft()
@@ -469,12 +483,12 @@ class Robot:
             Returns:
                 robot velocity projection
             '''
-            p = np.array(p)
-            p_beta = np.array((p_beta))
+            p_a = np.array(p)
+            p_b = np.array(p_beta)
             # identity matrix with dimension 2
             I = np.identity(self.dimension)
             # a_k is unit normal vector
-            a_k = (p - p_beta) / np.linalg.norm(p - p_beta)
+            a_k = (p_a - p_b) / np.linalg.norm(p_a - p_b)
             # projection matrix
             proj_matrix = I - np.outer(a_k, a_k.T)
             # project velocity
@@ -486,14 +500,21 @@ class Robot:
                 if grid[r][c] == -1 and (r, c) not in visit:
                     beta_neighbour.append(bfs(r, c))
 
-        for p_beta in beta_neighbour:
+        for beta in beta_neighbour:
+            if np.any(beta):
+                neighbour.append(beta)
+
+        new_neighbour=[]
+        for p_beta in neighbour:
             v_proj = v_projection(position, p_beta, velocity)
             # add the velocity to the vector
-            p_beta.append(v_proj[0])
-            p_beta.append(v_proj[1])
+            p_beta = np.append(p_beta, v_proj)
+            new_neighbour.append(p_beta)
+            # p_beta = np.append(p_beta, v_proj[1])
 
-        self.beta_neighbour = beta_neighbour
-        return beta_neighbour
+        self.beta_neighbour = new_neighbour
+
+        return new_neighbour
 
 
 def define_robot(number):
@@ -512,7 +533,7 @@ def define_robot(number):
 
 # show the robot initial state and target in plot
 def show_robot(robotList):
-    figure0 = plt.figure('robot state ', figsize=(5, 5))
+    figure0 = plt.figure('robot initial state ', figsize=(5, 5))
     for robot in robotList:
         plt.scatter(robot.initial_state[0], robot.initial_state[1])
         plt.scatter(robot.initial_target[0], robot.initial_target[1], marker='*', color='black')
@@ -529,6 +550,7 @@ def show_robot(robotList):
     # save image to the image folder
     # plt.savefig('../image/initial_state.png')
     plt.show()
+    plt.savefig('../image/initial_state.png')
 
 def show_infomap(robot):
     '''
@@ -542,7 +564,7 @@ def show_infomap(robot):
     '''
 
     # define the color map
-    color_map = {1: np.array([250,128,114]),  # 1 is visited area filled with red
+    color_map = {1: np.array([250, 128, 114]),  # 1 is visited area filled with red
                  0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
 
     # define a sD matrix to store the color value
@@ -562,6 +584,7 @@ def show_infomap(robot):
     # show image
     plt.imshow(data_3d)
     plt.show()
+
 
 if __name__ == "__main__":
 
@@ -608,7 +631,7 @@ if __name__ == "__main__":
     b = np.array([3, 4])
 
     # test benefit_value function
-    benefit_value = gv.robotList[1].benefit_value()
+    benefit_value = gv.robotList[1].benefit_value(1)
     print(benefit_value)
     print(len(benefit_value))
     print(len(benefit_value[0]))
@@ -619,3 +642,6 @@ if __name__ == "__main__":
     gv.env_map = mymap.grid_map
     gv.robotList[1].update_info_map(1)
     print(gv.robotList[1].infomap)
+
+    # gv.robotList[1].get_beta(1)
+    # print(gv.robotList[1].beta_neighbour)
