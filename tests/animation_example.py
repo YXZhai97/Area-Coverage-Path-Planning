@@ -34,7 +34,7 @@ def init():
     return line,
 
 
-anim = FuncAnimation(fig, animate, frames=len(x)+1, init_func=init, interval=40, blit=False)
+anim = FuncAnimation(fig, animate, frames=1000, init_func=init, interval=40, blit=False)
 
 plt.show()
 anim.save('../image/animation.gif', writer='imagemagick', fps=60)

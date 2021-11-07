@@ -32,6 +32,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import random
+import time
 # a=np.zeros((4,6,6))
 # a[1,3,5]=2
 # print(a[1])
@@ -129,6 +131,60 @@ print(b[1])
 
 fig1 = plt.figure('Figure1',figsize = (6,4))
 fig1.add_subplot(221)
-fig1.plot([1,2,3,4],[5,6,7,8])
-fig1.add_subplot(221)
-fig1.plot([1,2,3,4],[5,6,7,8])
+plt.plot([1,2,3,4],[5,6,7,8])
+plt.xlabel("size")
+plt.ylabel("price ")
+robot=0.1
+t=1
+plt.title("the state of robot %1.1f" %robot +" and %i" %t)
+fig1.add_subplot(222)
+plt.plot([1,2,3,4],[5,6,7,8])
+plt.xlabel("size2")
+plt.ylabel("price2 ")
+
+# fix the random value generator
+n1=np.random.uniform(1,3)
+print(n1)
+n1=np.random.uniform(1,3)
+print(n1)
+
+np.random.seed(1)
+n2=np.random.uniform(1,3)
+np.random.seed(1)
+n3=np.random.uniform(1,3)
+print(n2,n3)
+np.random.seed(1)
+n2=np.random.uniform(1,3)
+np.random.seed(1)
+n3=np.random.uniform(1,3)
+print(n2,n3)
+
+# flip the matrix upside down
+m1=np.array([[1,2,3,4],[6,7,8,9]])
+print(np.flipud(m1))
+print(m1)
+matrix=np.array([[1,2,3,4,4,5,7],[5,6,7,8,6,7,8],[1,2,3,4,5,6,6]])
+# test np.sum
+start = time.time()
+print(np.sum(matrix))
+end=time.time()
+print(end-start)
+
+start = time.time()
+sum=0
+for i in range(len(matrix)):
+    for j in range(len(matrix[0])):
+        sum+=matrix[i,j]
+print(sum)
+end=time.time()
+print(end-start)
+
+
+matrix1=np.array([[1,0,1,1,0],[1,1,0,0,1]])
+matrix2=np.array([[1,0,0,0,0],[0,0,1,1,1]])
+
+m=1*np.logical_or(matrix2,matrix1)
+m1=np.logical_or(matrix2,matrix1)
+m1.astype(int)
+print(m)
+print(m1)
