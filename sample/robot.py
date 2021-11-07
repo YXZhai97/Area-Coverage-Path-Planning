@@ -27,6 +27,7 @@ class Robot:
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
+        self.coverage_percent=np.zeros(gv.Iteration)
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
@@ -179,6 +180,9 @@ class Robot:
             u_alpha_j_2 = gv.c2_alpha * a_ij * (v_j - v_i)
             u_alpha += u_alpha_j_1 + u_alpha_j_2
 
+        if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
+            u_alpha=0
+
         # calculate the influence of beta_agent
         # first get the neighbour
 
@@ -196,6 +200,10 @@ class Robot:
                 u_beta += u_beta_k_1 + u_beta_k_2
                 k += 1
 
+        # if robot out of the boundary, the repulsion force is cancelled
+        if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
+            u_beta=0
+
         # calculate the influence of gamma_agent
         # target is Iteration*2 dimensional matrix
         q_target = self.target[time]
@@ -208,14 +216,14 @@ class Robot:
 
         # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
-        print(u)
+        # print(u)
         # limit the acceleration
         norm_u = np.linalg.norm(u)
         if norm_u > 100:
             u = 100 * u / norm_u
 
-        print(u)
-        print(norm_u)
+        # print(u)
+        # print(norm_u)
 
         return u
 
@@ -396,6 +404,18 @@ class Robot:
                     if robot_j.tarobsmap[y, x] == 0 and self.tarobsmap[y, x] != 0:
                         robot_j.tarobsmap[y, x] = self.tarobsmap[y, x]
 
+        def update_percent(infomap,time):
+            coverage_area=np.sum(self.infomap)
+            area=gv.x_n*gv.y_n
+            percent=coverage_area/area
+            self.coverage_percent[time]=percent
+
+        update_percent(self.infomap,time)
+
+
+
+
+
     # def get_beta_agent(self, time):
     #     # robot current sate
     #     q = np.array(self.state)[time, :2]
@@ -563,6 +583,9 @@ def show_infomap(robot):
 
     '''
 
+    # flip the information map
+    flip_infomap=np.flipud(robot.infomap)
+
     # define the color map
     color_map = {1: np.array([250, 128, 114]),  # 1 is visited area filled with red
                  0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
@@ -570,20 +593,55 @@ def show_infomap(robot):
     # define a sD matrix to store the color value
     data_3d = np.ndarray(shape=(gv.y_n, gv.x_n, 3), dtype=int)
 
+
     # plot the grid_map with color
     for i in range(gv.y_n):
         for j in range(gv.x_n):
-            data_3d[i][j] = color_map[robot.infomap[i][j]]
+            data_3d[i][j] = color_map[flip_infomap[i][j]]
 
     # figure = plt.figure('2D grid map', figsize=(5, 5))
     # add label
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
-    plt.title("Information map of the robot")
+    plt.title("Information map of robot %i" % robot.id)
 
     # show image
     plt.imshow(data_3d)
     plt.show()
+
+
+def merge_infomap(robotList):
+    '''
+    Args:
+        robotList: a list of robot
+
+    Returns:
+        merge the info maps and return a percent in [0,1]
+        todo return also the merged_info map matrix
+    '''
+
+    merged_map=np.zeros((gv.y_n,gv.x_n))
+    for robot in robotList:
+        # logic_or two matrix and convert it into number 0 and 1
+        merged_map=1*np.logical_or(merged_map,robot.infomap)
+
+    coverage_area = np.sum(merged_map)
+    area = gv.x_n * gv.y_n
+    percent = coverage_area / area
+
+    return percent
+
+def show_coverage_percent(c_percent):
+    '''
+    Args:
+        c_percent: a lsit of coverage_percent number
+    Returns:
+        plot the coverage percent changes
+    '''
+
+    pass
+
+
 
 
 if __name__ == "__main__":

@@ -15,8 +15,11 @@ def visualize(robot_list):
     fig = plt.figure()
     ax=plt.subplot(111, aspect = 'equal')
     line,=ax.plot([],[],'ro')
-    plt.xlim(-1000,1000)
-    plt.ylim(-1000,1000)
+    plt.xlim(-10,gv.x_bound+10)
+    plt.ylim(-10,gv.y_bound+10)
+    plt.title("robot motion animation")
+    plt.xlabel("x coordinate")
+    plt.ylabel("y coordinate")
 
     def init():
         line.set_data([],[])

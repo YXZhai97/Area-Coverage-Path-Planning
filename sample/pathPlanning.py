@@ -7,7 +7,8 @@ The main script for path planning
 
 # robot initialization
 # define three robot and initialize the state and target
-robotList = define_robot(3)
+robotList = define_robot(gv.robot_number)
+
 for robot in robotList:
     robot.random_init_state()
     robot.random_init_target()
@@ -25,6 +26,8 @@ mymap = EnvMap(50, 50, 1)
 mymap.show_map()
 
 # iteration
+# monitor the coverage percent
+c_percent=np.zeros(gv.Iteration-1)
 # todo there is index problem with time+1
 for time in range(gv.Iteration-1):
     for robot in robotList:
@@ -34,22 +37,34 @@ for time in range(gv.Iteration-1):
         robot.update_target(time)
         # update robot state
         robot.update_state(time)
+    # merge the infomap of the robots
+    coverage_percent=merge_infomap(robotList)
+    c_percent[time]=coverage_percent
+
+    # print log info
     print("Time step:", time)
+    print("Coverage percent:", coverage_percent)
+
+
+
 
 # plot the robot target position
 figure2=plt.figure('robot target position', figsize=(5,5))
 for robot in robotList:
     # plt.plot(robot.state[:, 0], robot.state[:, 1])
     plt.scatter(robot.target[:,0],robot.target[:,1])
-plt.savefig('../image/target6.png')
+plt.savefig('../image/target8.png')
 plt.show()
 
 
 # plot the robot path
-figure3=plt.figure('robot path ', figsize=(5,5))
+figure3=plt.figure('robot path ', figsize=(8,5))
 for robot in robotList:
     plt.plot(robot.state[:, 0], robot.state[:, 1])
-plt.savefig('../image/path6.png')
+plt.xlabel("X coordinate [m]")
+plt.ylabel("Y coordinate [m]")
+plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
+plt.savefig('../image/path8.png')
 
 
 # plot the information map of the robot
@@ -60,8 +75,10 @@ subfig2=figure4.add_subplot(222)
 show_infomap(robotList[1])
 subfig3=figure4.add_subplot(223)
 show_infomap(robotList[2])
+subfig4=figure4.add_subplot(224)
 
-plt.savefig('../image/infomap6.png')
+
+plt.savefig('../image/infomap8.png')
 
 
 
