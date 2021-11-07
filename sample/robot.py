@@ -185,6 +185,7 @@ class Robot:
 
         # calculate the influence of beta_agent
         # first get the neighbour
+        # todo repulsive force too large, when robots meet, separate too quick
 
         if len(beta_neighbour)>0:
             k = 0
@@ -638,8 +639,15 @@ def show_coverage_percent(c_percent):
     Returns:
         plot the coverage percent changes
     '''
+    figure=plt.figure('Coverage percent',figsize=(5,5))
+    time_steps=np.linspace(0,gv.T,gv.Iteration-1)
+    plt.plot(time_steps,c_percent)
+    plt.xlabel("Simulation time")
+    plt.ylabel("coverage percent")
+    plt.title("Area Coverage Percent")
+    plt.savefig('../image/coverage_percent.png')
 
-    pass
+
 
 
 

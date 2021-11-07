@@ -46,7 +46,8 @@ for time in range(gv.Iteration-1):
     print("Coverage percent:", coverage_percent)
 
 
-
+# plot the coverage percent
+show_coverage_percent(c_percent)
 
 # plot the robot target position
 figure2=plt.figure('robot target position', figsize=(5,5))
