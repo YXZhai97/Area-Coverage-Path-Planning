@@ -9,10 +9,11 @@ steps to create an animation
 7. display or save animation
 
 """
+import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-
+import matplotlib.animation as animation
 
 # set up empty figure, axes and line object
 fig, ax = plt.subplots()
@@ -37,4 +38,8 @@ def init():
 anim = FuncAnimation(fig, animate, frames=1000, init_func=init, interval=40, blit=False)
 
 plt.show()
-anim.save('../image/animation.gif', writer='imagemagick', fps=60)
+
+# set up writer object
+
+writervideo = animation.FFMpegWriter(fps=60)
+anim.save('../image/animation.mp4', writer=writervideo)
