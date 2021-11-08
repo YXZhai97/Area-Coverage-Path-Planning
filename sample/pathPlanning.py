@@ -1,6 +1,7 @@
 from env_map import *
 from robot import *
 from robot_animation import *
+import matplotlib.animation as animation
 """
 The main script for path planning 
 """
@@ -54,7 +55,10 @@ figure2=plt.figure('robot target position', figsize=(5,5))
 for robot in robotList:
     # plt.plot(robot.state[:, 0], robot.state[:, 1])
     plt.scatter(robot.target[:,0],robot.target[:,1])
-plt.savefig('../image/target8.png')
+plt.xlabel("X coordinate [m]")
+plt.ylabel("Y coordinate [m]")
+plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
+plt.savefig('../image/target11.png')
 plt.show()
 
 
@@ -65,7 +69,7 @@ for robot in robotList:
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/path8.png')
+plt.savefig('../image/path11.png')
 
 
 # plot the information map of the robot
@@ -77,14 +81,16 @@ show_infomap(robotList[1])
 subfig3=figure4.add_subplot(223)
 show_infomap(robotList[2])
 subfig4=figure4.add_subplot(224)
+show_merge_infomap(robotList)
 
-
-plt.savefig('../image/infomap8.png')
+plt.savefig('../image/infomap11.png')
 
 
 
 # 2D animation
 anim=visualize(robotList)
+writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
+anim.save('../image/robot_path_animation11.mp4', writer=writervideo)
 # 2D static
 
 # todo the boundary is not modeled, no need to model the boundary
