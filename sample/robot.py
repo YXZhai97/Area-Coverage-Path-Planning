@@ -546,6 +546,24 @@ class Robot:
 
         return new_neighbour
 
+    # todo: integrate tangent bug to the Robot Class
+    def tangent_bug(start_point, goal_point, env_map):
+
+        step_length = 1
+        mode = 0  # motion to goal , mode=1-> boundary follow
+
+        def update_obsmap():
+            pass
+
+        def get_endpoints():
+            pass
+
+        def go_straight():
+            pass
+
+        def boundary_follow():
+            pass
+
 
 def define_robot(number):
     """
