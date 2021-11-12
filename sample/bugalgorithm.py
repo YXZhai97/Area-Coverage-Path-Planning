@@ -2,7 +2,7 @@
 Implement Tangent Bug Algorithm for Mobile Robot
 """
 import numpy as np
-
+import collections
 import global_value as gv
 from env_map import *
 
@@ -47,6 +47,46 @@ def tangent_bug(start_point, goal_point, env_map):
                 distance = np.linalg.norm(p - grid_point)
                 if distance <= rs and env_map[row, col] == 1:
                     obs_map[row, col] = -1
+
+    def get_obs():
+        pass
+
+    def chek_intersection():
+        visit = set()
+
+        def bfs(r,c):
+            q=collections.deque(r,c)
+            visit.add((r,c))
+            q.append((r,c))
+
+            while q:
+                row,col = q.popleft()
+                directions=[[1,0],[-1,0],[0,1],[0,-1]]
+
+                center=get_center(row,col)
+
+
+                for dr,dc in directions:
+                    r,c=row+dr, col+dc
+                    if (r in range(y_n) and
+                        c in range(x_n) and
+                        obs_map[r,c]==-1 and
+                        (r,c) not in visit):
+                        q.append((r,c))
+                        visit.add((r,c))
+
+
+
+        for row in range(y_n):
+            for col in range(x_n):
+                center = get_center(row, col)
+                distance = np.linalg.norm(center-state)
+                if obs_map[row, col] == -1 and distance <= rs and (row, col) not in visit:
+                    bfs(row, col)
+
+     def get_angle():
+         pass
+
 
     def get_endpoints():
         pass
