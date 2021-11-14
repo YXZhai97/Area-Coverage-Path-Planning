@@ -5,6 +5,7 @@ import numpy as np
 import collections
 import global_value as gv
 from env_map import *
+from math import *
 
 mymap = EnvMap(100, 100, 1)
 mymap.add_polygon([50, 50, 70, 80, 80, 60])
@@ -16,6 +17,7 @@ def tangent_bug(start_point, goal_point, env_map):
     rs = 5
     step_length = 0.5
     state = np.zeros((Iteration, 2))
+    state[0]=start_point
     x_n = len(env_map[0])  # number of col
     y_n = len(env_map)  # number of row
     obs_map = np.zeros((y_n, x_n))
@@ -48,33 +50,40 @@ def tangent_bug(start_point, goal_point, env_map):
                 if distance <= rs and env_map[row, col] == 1:
                     obs_map[row, col] = -1
 
-    def get_obs():
-        pass
 
-    def chek_intersection():
+
+    def chek_intersection(state,goal):
         visit = set()
+        angle_sets=[]
+        dx = goal[0] - state[0]
+        dy = goal[1] - state[1]
+        goal_state_angle = atan2(dy, dx) * 180 / pi
+
+
 
         def bfs(r,c):
+            angle=np.zeros(3)
             q=collections.deque(r,c)
             visit.add((r,c))
             q.append((r,c))
 
             while q:
-                row,col = q.popleft()
+                rr,cc = q.popleft()
                 directions=[[1,0],[-1,0],[0,1],[0,-1]]
 
-                center=get_center(row,col)
+                center = get_center(rr,cc)
+                angle=np.vstack((angle,get_angle(state,center))
 
 
                 for dr,dc in directions:
-                    r,c=row+dr, col+dc
+                    r,c=rr+dr,cc+dc
                     if (r in range(y_n) and
                         c in range(x_n) and
                         obs_map[r,c]==-1 and
                         (r,c) not in visit):
                         q.append((r,c))
                         visit.add((r,c))
-
+            return angle[1:]
 
 
         for row in range(y_n):
@@ -82,17 +91,49 @@ def tangent_bug(start_point, goal_point, env_map):
                 center = get_center(row, col)
                 distance = np.linalg.norm(center-state)
                 if obs_map[row, col] == -1 and distance <= rs and (row, col) not in visit:
-                    bfs(row, col)
+                    angle_sets.append(bfs(row, col))
 
-     def get_angle():
-         pass
+        for angle_set in angle_sets:
+            angle_range=angle_set[:,0]
+            max_angle=max(angle_range)
+            min_angle=min(angle_range)
+            if max_angle>goal_state_angle>min_angle:
+                return angle_set
 
 
-    def get_endpoints():
-        pass
+    def get_angle(p1,p2):
+        '''
+        Args:
+            p1: [x1,y1] of the first point
+            p2: [x2,y2] of the second point
+        Returns:
+            angle of the line, and position of p2
+        '''
+        dx=p2[0]-p1[0]
+        dy=p2[1]-p1[1]
+        angle=atan2(dy,dx)*180/pi
 
-    def get_heuristic_goal():
-        pass
+        return [angle,p2[0],p2[1]]
+
+
+
+    def get_heuristic_goal(angle_set):
+        angle_range=angle_set[:,0]
+        max_angle=max(angle_range)
+        min_angle=min(angle_range)
+        max_index=angle_range.index(max_angle)
+        min_index=angle_range.index(min_angle)
+        end_point1=angle_set[max_index,1:]
+        end_point2=angle_set[min_index,1:]
+        heuristic_distance1=np.linalg.norm(state-end_point1)+np.linalg.norm(end_point1-goal_point)
+        heuristic_distance2 = np.linalg.norm(state - end_point2) + np.linalg.norm(end_point2 - goal_point)
+
+        if heuristic_distance1>heuristic_distance2:
+            return end_point2
+        else:
+            return end_point1
+
+
 
     def go_straight():
         pass
