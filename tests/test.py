@@ -29,7 +29,7 @@
 # ]
 #
 # print(sample.floodFill(image, 3, 3, 1))
-
+from math import *
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -188,4 +188,49 @@ m1=np.logical_or(matrix2,matrix1)
 m1.astype(int)
 print(m)
 print(m1)
+
+
+def get_angle(p1, p2):
+    '''
+    Args:
+        p1: [x1,y1] of the first point
+        p2: [x2,y2] of the second point
+    Returns:
+        angle of the line
+    '''
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
+    angle = atan2(dy, dx) * 180 / pi
+
+    return [angle, p2[0], p2[1]]
+print(get_angle([1,2],[8,3]))
+a=[]
+a.append(get_angle([1,2],[8,3]))
+a.append(get_angle([1,2],[4,3]))
+print(a)
+b=3.8
+if b in range(2,4):
+    print(b)
+
+nums=[1,2,3,4,5,6]
+maxn=max(nums)
+max_index=nums.index(maxn)
+print(maxn,max_index)
+m=[[1,2,3,4],[6,7,8,9],[3,4,5,6]]
+print(m[1][:])
+mm=np.array([])
+print(mm)
+
+nnn=np.array([1,1,1,1])
+nnn=np.vstack((nnn,[1,2,3,4]))
+nnn=np.vstack((nnn,[1,2,3,4]))
+print(nnn[1:])
+
+matrixs=[]
+mmm=np.vstack((nnn,[1,2,3,4]))
+matrixs.append(nnn)
+matrixs.append(mmm)
+print(matrixs)
+
+
 
