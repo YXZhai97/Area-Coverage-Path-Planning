@@ -231,6 +231,13 @@ mmm=np.vstack((nnn,[1,2,3,4]))
 matrixs.append(nnn)
 matrixs.append(mmm)
 print(matrixs)
+for m in matrixs:
+    print(m[:,0])
+
+values = np.array([3,6,1,5])
+index_min = np.argmin(values)
+print(index_min)
+
 
 
 
