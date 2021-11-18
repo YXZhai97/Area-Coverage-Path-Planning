@@ -6,7 +6,7 @@ circle, polygon, irregular shape and walls
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
-import math
+from math import *
 import global_value as gv
 
 class EnvMap:
@@ -18,6 +18,8 @@ class EnvMap:
         self.y_n = int(self.y_bound / self.grid_length) # number of grid in y direction
         self.grid_map = self.make_grid(self.x_n, self.y_n)
         gv.env_map=self.grid_map
+        self.obstacles=[] # store the obstacle points
+        self.point_num=100 # number of points on a obstacle
 
     def make_grid(self, x_n, y_n):
         grid=np.zeros((y_n,x_n))
@@ -48,9 +50,23 @@ class EnvMap:
         for i in range(self.x_n):
             for j in range(self.y_n):
                 center_point = [grid_length / 2 + i * grid_length, grid_length / 2 + j * grid_length]
-                distance = math.sqrt((center_point[0] - x_position) ** 2 + (center_point[1] - y_position) ** 2)
+                distance = sqrt((center_point[0] - x_position) ** 2 + (center_point[1] - y_position) ** 2)
                 if abs(distance - r) < r_t:
-                    self.grid_map[i, j] = 1
+                    self.grid_map[j, i] = 1
+
+        # create dense points on the circle
+        t=np.linspace(0, 2*pi, self.point_num)
+        circle=np.zeros((2, self.point_num))
+        for i in range(self.point_num):
+            circle[0,i]=x_position+r*cos(t[i])
+            circle[1, i] = y_position + r * sin(t[i])
+
+        # add circle points to self.obstacles
+        self.obstacles.append(circle)
+
+
+
+
 
     def add_polygon(self, key_points: List[int]):
         '''
@@ -64,6 +80,7 @@ class EnvMap:
         # append the first key_point to the end of the list
         key_points.append(key_points[0])
         key_points.append((key_points[1]))
+        poly_lines=[]
 
         # calculate the number of points
         number_of_points = int(len(key_points) / 2 - 1)
@@ -72,18 +89,16 @@ class EnvMap:
         for i in range(number_of_points):
             start_point = [key_points[2 * i], key_points[2 * i + 1]]
             end_point = [key_points[2 * i + 2], key_points[2 * i + 3]]
-            self.add_line(start_point, end_point)
+            line_i=self.add_line(start_point, end_point)
+            if len(poly_lines)==0:
+                poly_lines=line_i
+            else:
+                poly_lines=np.concatenate((poly_lines,line_i),axis=1)
 
-    # def add_irregular(self, start_point, matrix):
-    #     """
-    #
-    #     Args:
-    #         start_point:
-    #         matrix:
-    #
-    #     Returns:
-    #
-    #     """
+        self.obstacles.append(poly_lines)
+
+
+
 
 
 
@@ -142,7 +157,16 @@ class EnvMap:
 
         # print the line on the grid_map
         for point in points:
-            self.grid_map[point[0], point[1]] = 1
+            self.grid_map[point[1], point[0]] = 1
+
+        line=np.zeros((2,self.point_num))
+        for i in range(self.point_num):
+            line[0,i]=p1[0]+i/self.point_num*(p2[0]-p1[0])
+            line[1, i] = p1[1] + i / self.point_num * (p2[1] - p1[1])
+
+        return line
+
+
 
     # def floodFill(self, sr, sc, newColor):
     #
@@ -178,28 +202,35 @@ class EnvMap:
                      0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
 
         # define a sD matrix to store the color value
-        data_3d = np.ndarray(shape=(self.x_n, self.y_n, 3), dtype=int)
+        data_3d = np.ndarray(shape=(self.y_n, self.x_n, 3), dtype=int)
 
+        # flip the map
+        # flip_grid_map=np.flipud(self.grid_map)
         # plot the grid_map with color
         for i in range(self.x_n):
             for j in range(self.y_n):
-                data_3d[i][j] = color_map[self.grid_map[i][j]]
+                data_3d[j][i] = color_map[self.grid_map[j][i]]
 
         figure1=plt.figure('2D grid map', figsize=(5,5))
         # add label
-        plt.xlabel("Y coordinate [m]")
-        plt.ylabel("X coordinate [m]")
+        plt.xlabel("X coordinate [m]")
+        plt.ylabel("Y coordinate [m]")
         plt.title("2D grid map")
 
         # show image
-        plt.imshow(data_3d)
+        plt.imshow(data_3d,origin='lower')
+
+        # show the obstacle points
+        for obstacle in self.obstacles:
+            plt.plot(obstacle[0],obstacle[1])
         plt.show()
 
 
 if __name__=="__main__":
     mymap = EnvMap(300, 300, 1)
-    mymap.add_circle(90, 60, 45)
-    mymap.add_circle(200,150,30)
-    mymap.add_polygon([100,100,160,180,160,250,100,280])
+    mymap.add_circle(90, 60, 30)
+    mymap.add_circle(80,170,30)
+    mymap.add_polygon([100,100,160,180,160,250,70,280])
     # mymap.floodFill(90,60,1)
     mymap.show_map()
+
