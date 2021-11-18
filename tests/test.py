@@ -238,6 +238,21 @@ values = np.array([3,6,1,5])
 index_min = np.argmin(values)
 print(index_min)
 
+print(cos(180/180*pi))
+
+obss=[]
+nparr=np.array([1,2,3,4])
+obss.append(nparr)
+nparr2=np.array([[1,2,3,4],[44,3,3,2]])
+obss.append(nparr2)
+print(obss)
+nn=np.array([])
+n1=np.array([[1,2,3,4],[2,3,4,5]])
+n2=np.array([[4,5,6,7],[3,3,3,3]])
+nn=np.concatenate((nn,n2),axis=1)
+nn=np.concatenate((nn,n1),axis=1)
+print(nn)
+
 
 
 
