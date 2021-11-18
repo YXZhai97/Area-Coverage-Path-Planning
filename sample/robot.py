@@ -777,3 +777,5 @@ if __name__ == "__main__":
 
     # gv.robotList[1].get_beta(1)
     # print(gv.robotList[1].beta_neighbour)
+
+
