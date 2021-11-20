@@ -240,19 +240,21 @@ print(index_min)
 
 print(cos(180/180*pi))
 
-obss=[]
-nparr=np.array([1,2,3,4])
-obss.append(nparr)
-nparr2=np.array([[1,2,3,4],[44,3,3,2]])
-obss.append(nparr2)
-print(obss)
-nn=np.array([])
-n1=np.array([[1,2,3,4],[2,3,4,5]])
-n2=np.array([[4,5,6,7],[3,3,3,3]])
-nn=np.concatenate((nn,n2),axis=1)
-nn=np.concatenate((nn,n1),axis=1)
-print(nn)
 
+
+
+nums=[[1,2,3,4,4],[4,3,4,3,2]]
+print(len(nums[0]))
+
+num_iter=10
+nn=np.array([1,3])
+circle_scanned=np.zeros((num_iter,2))
+for i in range(10):
+    len_clos=1
+    circle_scanned[i]=nn
+
+print(circle_scanned)
+print(len_clos)
 
 
 
