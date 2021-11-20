@@ -256,5 +256,9 @@ for i in range(10):
 print(circle_scanned)
 print(len_clos)
 
+p1=np.array([1,2])
+x,y=p1
+print(x,y)
+
 
 
