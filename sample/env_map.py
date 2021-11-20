@@ -19,7 +19,7 @@ class EnvMap:
         self.grid_map = self.make_grid(self.x_n, self.y_n)
         gv.env_map=self.grid_map
         self.obstacles=[] # store the obstacle points
-        self.point_num=100 # number of points on a obstacle
+        self.point_num=1000 # number of points on a obstacle
 
     def make_grid(self, x_n, y_n):
         grid=np.zeros((y_n,x_n))
@@ -233,4 +233,10 @@ if __name__=="__main__":
     mymap.add_polygon([100,100,160,180,160,250,70,280])
     # mymap.floodFill(90,60,1)
     mymap.show_map()
+    print(mymap.obstacles)
+    first_obs=mymap.obstacles[0]
+    second_obs=mymap.obstacles[1]
+    third_obs = mymap.obstacles[2]
+    print(len(third_obs[0]))
+
 
