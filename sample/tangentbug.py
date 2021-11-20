@@ -5,8 +5,6 @@ Author: Yixing Zhai
 Date: 17.11.2021
 
 """
-import matplotlib.pyplot as plt
-import numpy as np
 
 from env_map import *
 
@@ -35,7 +33,7 @@ def tangent_bug(start_point, goal_point, my_map):
     # get the intersection curve and endpoints
 
 
-def get_curve(obstacles, cur_state, goal_point,rs):
+def get_curve(obstacles, cur_state, goal_point, rs):
     """
     Args:
         obstacles: The total obstacles
@@ -47,58 +45,88 @@ def get_curve(obstacles, cur_state, goal_point,rs):
     """
     # number of obstacles defined
     num_obs = len(obstacles)
-    cur_x=cur_state[0]
-    cur_y=cur_state[1]
-    num_iter=360
-    angle_space=np.linspace(-pi, pi, num_iter)
-    angle_step=2*pi/num_iter
+    cur_x = cur_state[0]
+    cur_y = cur_state[1]
+    num_iter = 360
+    angle_space = np.linspace(-pi, pi, num_iter)
+    angle_step = 2 * pi / num_iter
 
-    circle_scanned=np.zeros((num_iter,2))
-    circle_occupied=np.zeros(num_iter)
+    circle_scanned = np.zeros((num_iter, 2))
+    circle_occupied = np.zeros(num_iter)
 
     for i in range(num_iter):
-        len_close=rs
-        i_angle=angle_space[i]
+        len_close = rs
+        i_angle = angle_space[i]
         for obstacle in obstacles:
-            num_points=len(obstacle[0])
+            num_points = len(obstacle[0])
             for n_p in range(num_points):
-                obs_x=obstacle[0,n_p]
-                obs_y=obstacle[1,n_p]
-                obs_point=np.array([obs_x,obs_y])
+                obs_x = obstacle[0, n_p]
+                obs_y = obstacle[1, n_p]
+                obs_point = np.array([obs_x, obs_y])
                 # print(obs_point)
-                angle_obs=atan2(obs_y-cur_y,obs_x-cur_x)
+                angle_obs = atan2(obs_y - cur_y, obs_x - cur_x)
 
-                if abs(angle_obs-i_angle)<angle_step:
-                    cur_to_obs = np.linalg.norm(cur_state-obs_point)
+                if abs(angle_obs - i_angle) < angle_step:
+                    cur_to_obs = np.linalg.norm(cur_state - obs_point)
                     print(cur_to_obs)
                     if cur_to_obs < len_close:
-                        circle_scanned[i]=obs_point
-                        if circle_occupied[i]==0:
-                            circle_occupied[i]=1
+                        circle_scanned[i] = obs_point
+                        if circle_occupied[i] == 0:
+                            circle_occupied[i] = 1
 
     return circle_occupied, circle_scanned
 
 
+def check_intersection(cur_p, goal_p, end_points):
+    """
+    Args:
+        cur_p: np array
+        goal_p: np array
+        end_points: list of list [[p1x,p1y],[p2x,p2y]]
+    Returns:
+        is_intersect: True or Flase
+    """
+    o1 = end_points[0]
+    o2 = end_points[1]
+    if cur_p[0] != goal_p[0]:
+        multi = (o1[1] - get_line(cur_p, goal_p, o1[0])) * (o2[1] - get_line(cur_p, goal_p, o2[0]))
+    else:
+        multi = (o1[0] - cur_p) * (o2[0] - goal_p[0])
+
+    if multi > 0:
+        is_intersect = False
+    else:
+        is_intersect = True
+
+    return is_intersect
+
+
+def get_line(p1, p2, x):
+    """
+    Args:
+        p1: point 1
+        p2: point 2
+        x: x coordinate
+    Returns:
+        y coordinate with respect to x
+    """
+    x1, y1 = p1
+    x2, y2 = p2
+    y = (x - x1) / (x2 - x1) * (y2 - y1) + y1
+
+    return y
+
+
 mymap = EnvMap(300, 300, 1)
-mymap.add_polygon([100,100,160,180,160,250,70,280])
-mymap.add_circle(172,115,35)
+mymap.add_polygon([100, 100, 160, 180, 160, 250, 70, 280])
+mymap.add_circle(172, 115, 35)
 mymap.show_map()
-obs=mymap.obstacles
-state=np.array([164,178])
-goal_point=np.array([120,190])
-occu,scanned=get_curve(obs,state,goal_point,10)
+obs = mymap.obstacles
+state = np.array([164, 178])
+goal_point = np.array([120, 190])
+occu, scanned = get_curve(obs, state, goal_point, 10)
 print(occu)
 print(scanned)
-plt.scatter(scanned[:,0],scanned[:,1],s=5,c='r')
+plt.scatter(scanned[:, 0], scanned[:, 1], s=5, c='r')
 
-
-
-
-
-
-
-
-
-
-
-
+print(get_line([1,2],[8,0],3))
