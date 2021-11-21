@@ -5,6 +5,7 @@ Author: Yixing Zhai
 Date: 17.11.2021
 
 """
+import matplotlib.pyplot as plt
 
 from env_map import *
 
@@ -29,7 +30,6 @@ def tangent_bug(start_point, goal_point, my_map):
     rs = 5
     step_len = 1
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
-
     # get the intersection curve and endpoints
 
 
@@ -54,6 +54,10 @@ def get_curve(obstacles, cur_state, goal_point, rs):
     circle_scanned = np.zeros((num_iter, 2))
     circle_occupied = np.zeros(num_iter)
 
+    end_points=[]
+    is_intersect = False
+    intersect_end_points=[]
+
     for i in range(num_iter):
         len_close = rs
         i_angle = angle_space[i]
@@ -71,10 +75,36 @@ def get_curve(obstacles, cur_state, goal_point, rs):
                     print(cur_to_obs)
                     if cur_to_obs < len_close:
                         circle_scanned[i] = obs_point
+                        len_close=cur_to_obs
                         if circle_occupied[i] == 0:
                             circle_occupied[i] = 1
 
-    return circle_occupied, circle_scanned
+    continue_list = np.zeros(num_iter)
+    for i in range(num_iter):
+        if i ==0:
+            continue_list[i]=circle_occupied[i]+circle_occupied[i+1]+circle_occupied[-1]
+        elif i==num_iter-1:
+            continue_list[i]=circle_occupied[i-1]+circle_occupied[0]+circle_occupied[i]
+        else:
+            continue_list[i]=circle_occupied[i-1]+circle_occupied[i+1]+circle_occupied[i]
+        if continue_list[i]==2:
+            end_points.append(circle_scanned[i])
+
+    end_point_num = len(end_points)
+    if end_point_num == 2:
+        is_intersect = check_intersection(cur_state, goal_point, end_points)
+    else:
+        for i in range(end_point_num):
+            if i ==0:
+                ep=[end_points[0],end_points[-1]]
+                is_intersect=check_intersection(cur_state,goal_point,ep)
+            elif i%2==1 and i!=end_point_num-1:
+                ep=[end_points[i],end_points[i+1]]
+                is_intersect = check_intersection(cur_state, goal_point, ep)
+            if is_intersect:
+                intersect_end_points=ep
+
+    return circle_occupied, circle_scanned, continue_list,intersect_end_points
 
 
 def check_intersection(cur_p, goal_p, end_points):
@@ -122,11 +152,11 @@ mymap.add_polygon([100, 100, 160, 180, 160, 250, 70, 280])
 mymap.add_circle(172, 115, 35)
 mymap.show_map()
 obs = mymap.obstacles
-state = np.array([164, 178])
-goal_point = np.array([120, 190])
-occu, scanned = get_curve(obs, state, goal_point, 10)
-print(occu)
-print(scanned)
+state = np.array([160, 140])
+goal_point = np.array([50, 50])
+occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
+# print(occu)
+# print(scanned)
 plt.scatter(scanned[:, 0], scanned[:, 1], s=5, c='r')
 
-print(get_line([1,2],[8,0],3))
+# print(get_line([1,2],[8,0],3))
