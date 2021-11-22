@@ -36,7 +36,7 @@ def tangent_bug(start_point, goal_point, my_map):
     # start the main while loop
     while True:
         cur_state=state[time]
-        is_intersect, end_points=get_curve(obstacles,cur_state,goal_point,rs)
+        is_intersect, end_points, curve=get_curve(obstacles,cur_state,goal_point,rs)
 
         if is_intersect:
             temp_goal=get_heuristic_goal(cur_state,goal_point,end_points)
@@ -130,7 +130,7 @@ def get_curve(obstacles, cur_state, goal_point, rs):
                 intersect_end_points=ep
                 break
 
-    return is_intersect, intersect_end_points
+    return is_intersect, intersect_end_points, circle_scanned
 
 
 def check_intersection(cur_p, goal_p, end_points):
@@ -208,6 +208,8 @@ def boundary_follow():
 def check_along():
     pass
 
+def get_closest_point(cur_state,curve):
+    pass
 
 
 
