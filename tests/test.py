@@ -259,6 +259,10 @@ print(len_clos)
 p1=np.array([1,2])
 x,y=p1
 print(x,y)
+print(1%2)
+print(4%2)
 
+end_points=np.array([[1,2],[3,4]])
+plt.scatter(end_points[:,0],end_points[:,1])
 
 

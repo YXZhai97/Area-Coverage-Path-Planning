@@ -29,8 +29,29 @@ def tangent_bug(start_point, goal_point, my_map):
     info_map = np.zeros((y_n, x_n))
     rs = 5
     step_len = 1
+    time=0
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
+
+    # start the main while loop
+    while True:
+        cur_state=state[time]
+        is_intersect, end_points=get_curve(obstacles,cur_state,goal_point,rs)
+
+        if is_intersect:
+            temp_goal=get_heuristic_goal(cur_state,goal_point,end_points)
+        else:
+            temp_goal=goal_point
+
+        if mode==0: # go straight to goal
+            pass
+
+
+
+
+
+
+
 
 
 def get_curve(obstacles, cur_state, goal_point, rs):
@@ -57,6 +78,7 @@ def get_curve(obstacles, cur_state, goal_point, rs):
     end_points=[]
     is_intersect = False
     intersect_end_points=[]
+    intersect_curve=[]
 
     for i in range(num_iter):
         len_close = rs
@@ -93,6 +115,9 @@ def get_curve(obstacles, cur_state, goal_point, rs):
     end_point_num = len(end_points)
     if end_point_num == 2:
         is_intersect = check_intersection(cur_state, goal_point, end_points)
+        if is_intersect:
+            intersect_end_points=end_points
+
     else:
         for i in range(end_point_num):
             if i ==0:
@@ -103,8 +128,9 @@ def get_curve(obstacles, cur_state, goal_point, rs):
                 is_intersect = check_intersection(cur_state, goal_point, ep)
             if is_intersect:
                 intersect_end_points=ep
+                break
 
-    return circle_occupied, circle_scanned, continue_list,intersect_end_points
+    return is_intersect, intersect_end_points
 
 
 def check_intersection(cur_p, goal_p, end_points):
@@ -145,6 +171,44 @@ def get_line(p1, p2, x):
     y = (x - x1) / (x2 - x1) * (y2 - y1) + y1
 
     return y
+
+
+def get_heuristic_goal(cur_state,goal_point,end_points):
+    heuristic_d0=np.linalg.norm(cur_state-end_points[0])+np.linalg.norm(end_points[0]-goal_point)
+    heuristic_d1=np.linalg.norm(cur_state-end_points[1])+np.linalg.norm(end_points[1]-goal_point)
+
+    if heuristic_d0>heuristic_d1:
+        oi=end_points[1]
+    else:
+        oi=end_points[0]
+
+    return oi
+
+
+def go_straight(cur_state, temp_goal, step_len):
+
+    dy=temp_goal[1]-cur_state[1]
+    dx=temp_goal[0]-cur_state[0]
+    angle=atan2(dy,dx)
+    distance=np.linalg.norm(cur_state-temp_goal)
+    if distance>step_len:
+        next_x=cur_state[0]+cos(angle)*step_len
+        next_y=cur_state[1]+sin(angle)*step_len
+
+    next_state=np.array([next_x,next_y])
+
+    return next_state
+
+
+
+
+def boundary_follow():
+    pass
+
+def check_along():
+    pass
+
+
 
 
 mymap = EnvMap(300, 300, 1)
