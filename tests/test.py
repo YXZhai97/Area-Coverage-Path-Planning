@@ -265,4 +265,14 @@ print(4%2)
 end_points=np.array([[1,2],[3,4]])
 plt.scatter(end_points[:,0],end_points[:,1])
 
+angle=atan2(-1,-1)
+print(angle/pi*180)
+state=np.array([1,2])
+new_state=np.array([2,3])
+state=np.vstack((state,new_state))
+print(state)
+a=[1,2]
 
+nn=[]
+if nn==[]:
+    print("false")
