@@ -276,3 +276,17 @@ a=[1,2]
 nn=[]
 if nn==[]:
     print("false")
+dy=-0.01
+dx=-1
+print('angle',atan2(dy,dx)/pi*180)
+dx=-1
+dy=0.01
+print('angle',atan2(dy,dx)/pi*180)
+print(cos(pi+pi/2))
+print(sin(pi+pi/2))
+dx=1
+dy=0.01
+print(atan2(dy,dx)/pi*180)
+dx=1
+dy=-0.01
+print(atan2(dy,dx)/pi*180)
