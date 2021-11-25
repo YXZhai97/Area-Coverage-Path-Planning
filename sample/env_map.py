@@ -51,7 +51,7 @@ class EnvMap:
             for j in range(self.y_n):
                 center_point = [grid_length / 2 + i * grid_length, grid_length / 2 + j * grid_length]
                 distance = sqrt((center_point[0] - x_position) ** 2 + (center_point[1] - y_position) ** 2)
-                if abs(distance - r) < r_t:
+                if abs(distance - r) < grid_length:
                     self.grid_map[j, i] = 1
 
         # create dense points on the circle
