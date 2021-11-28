@@ -27,12 +27,15 @@ def tangent_bug(start_point, goal_point, my_map):
     x_n = my_map.x_n
     y_n = my_map.y_n
     info_map = np.zeros((y_n, x_n))
-    rs = 8
-    step_len = 2
+    rs = 4
+    step_len = 1
     time=0
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
     followed_curve=[]
+    hit_point=[]
+    hit_time=0
+    boundary_follow_finished=False
 
     # start the main while loop
     while True:
@@ -55,6 +58,10 @@ def tangent_bug(start_point, goal_point, my_map):
             mode=check_along(new_state, cur_state, scanned_curve, goal_point, rs, temp_goal)
             if mode:
                 print("end motion to goal, start boundary following")
+                hit_point=new_state # store the boundary following point
+                print("hit point", hit_point)
+                hit_time=time
+                print("hit time",hit_time)
                 dy=temp_goal[1]-new_state[1]
                 dx=temp_goal[0]-new_state[0]
                 previous_angle=atan2(dy,dx)
@@ -69,7 +76,16 @@ def tangent_bug(start_point, goal_point, my_map):
         state=np.vstack((state,new_state))
         print("time step:", time)
 
-        if (new_state==goal_point).all() or time>200:
+        if mode==1 and np.linalg.norm(new_state-hit_point)<rs and time-hit_time>20:
+
+            boundary_follow_finished=True
+
+
+        if (new_state==goal_point).all() or time>400:
+            print("Goal reached")
+            break
+        elif boundary_follow_finished:
+            print("Boundary following finished")
             break
         else:
             time+=1
@@ -169,10 +185,12 @@ def check_intersection(cur_p, goal_p, end_points):
         return False
     o1 = end_points[0]
     o2 = end_points[1]
+
     if cur_p[0] != goal_p[0]:
         multi = (o1[1] - get_line(cur_p, goal_p, o1[0])) * (o2[1] - get_line(cur_p, goal_p, o2[0]))
     else:
-        multi = (o1[0] - cur_p) * (o2[0] - goal_p[0])
+        multi = (o1[0] - cur_p[0]) * (o2[0] - goal_p[0])
+
 
     if multi > 0:
         is_intersect = False
@@ -244,14 +262,20 @@ def boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curv
     dy=close_point[1]-cur_state[1]
     dx=close_point[0]-cur_state[0]
     closest_angle=atan2(dy,dx)
-    if closest_angle<0 and cur_angle>0:
-        closest_angle=-closest_angle
+    # if closest_angle<0 and cur_angle>0:
+    #     closest_angle=-closest_angle
 
+    if cur_angle>closest_angle:
+        next_angle= closest_angle+pi/2
+        if cur_angle-next_angle>pi/2:
+            next_angle+=pi
 
-    if closest_angle>cur_angle :
-        next_angle=closest_angle-pi/2
     else:
-        next_angle=closest_angle+pi/2
+        next_angle=closest_angle-pi/2
+        if next_angle-cur_angle>pi/2:
+            next_angle-=pi
+
+
 
     print("next angle", next_angle/pi*180)
 
@@ -268,7 +292,7 @@ def check_along(cur_state, previous_state, scanned_curve, goal_point, rs, temp_g
     heuristic_previous=np.linalg.norm(previous_state-goal_point)
     heuristic_cur=np.linalg.norm(cur_state-goal_point)
     if (heuristic_cur>heuristic_previous
-        or min_dis<0.5*rs):
+        or min_dis<0.2*rs):
         mode=1
     else:
         mode=0
@@ -319,11 +343,14 @@ if __name__=="__main__":
 
     mymap = EnvMap(300, 300, 1)
     mymap.add_polygon([120,90,210,90,210,180,120,180])
+    # mymap.add_polygon([100,75,175,100,225,175,200,225,100,200,75,150])
+    # mymap.add_polygon([125,100,175,125,150,175,125,200,75,175,75,125])
     # mymap.add_circle(150, 150, 30)
     mymap.show_map()
     # obs = mymap.obstacles
-    start_point = [120, 60]
-    goal_point = [150, 150]
+    start_point = [150, 50]
+    goal_point = [150, 160]
+
 
     # occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
     # # print(occu)
@@ -336,4 +363,4 @@ if __name__=="__main__":
     plt.plot(state[:,0],state[:,1], c='r', linewidth=2)
     plt.scatter(start_point[0],start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
-    plt.savefig('../image/tangent_bug_circle3.png')
+    plt.savefig('../image/tangent_bug_poly10.png')
