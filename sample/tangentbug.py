@@ -27,9 +27,10 @@ def tangent_bug(start_point, goal_point, my_map):
     x_n = my_map.x_n
     y_n = my_map.y_n
     info_map = np.zeros((y_n, x_n))
-    rs = 4
+    rs = 6
     step_len = 1
     time=0
+    time_limit=400 # end the simulation with time limit
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
     followed_curve=[]
@@ -46,11 +47,14 @@ def tangent_bug(start_point, goal_point, my_map):
 
         is_intersect, end_points, scanned_curve=get_curve(obstacles,cur_state,goal_point,rs)
         followed_curve.append(scanned_curve)
+        print("end points", end_points)
 
         if not is_intersect:
+            print("not intersect")
             temp_goal = goal_point
         else:
             temp_goal = get_heuristic_goal(cur_state, goal_point, end_points)
+        print("temp goal", temp_goal)
 
 
         if mode==0: # go straight to goal
@@ -68,21 +72,23 @@ def tangent_bug(start_point, goal_point, my_map):
         else:
             new_state, new_angle=boundary_follow(previous_angle,cur_state,temp_goal,step_len,scanned_curve)
             previous_angle=new_angle
-            mode=check_off(cur_state, scanned_curve, goal_point, rs, obstacles, step_len, end_points)
+            mode=check_off(new_state, scanned_curve, goal_point, rs, obstacles, step_len, end_points)
 
             if mode==0:
                 print("end boundary following, start motion to goal ")
 
-        state=np.vstack((state,new_state))
+        state = np.vstack((state,new_state))
         print("time step:", time)
 
         if mode==1 and np.linalg.norm(new_state-hit_point)<rs and time-hit_time>20:
 
             boundary_follow_finished=True
 
-
-        if (new_state==goal_point).all() or time>400:
+        if (new_state==goal_point).all():
             print("Goal reached")
+            break
+        elif time>time_limit:
+            print("Time limit reached")
             break
         elif boundary_follow_finished:
             print("Boundary following finished")
@@ -180,7 +186,7 @@ def check_intersection(cur_p, goal_p, end_points):
     Returns:
         is_intersect: True or Flase
     """
-    print("end points", end_points)
+    # print("end points", end_points)
     if end_points==[]:
         return False
     o1 = end_points[0]
@@ -291,8 +297,7 @@ def check_along(cur_state, previous_state, scanned_curve, goal_point, rs, temp_g
     min_dis=get_closest_distance(cur_state,scanned_curve)
     heuristic_previous=np.linalg.norm(previous_state-goal_point)
     heuristic_cur=np.linalg.norm(cur_state-goal_point)
-    if (heuristic_cur>heuristic_previous
-        or min_dis<0.2*rs):
+    if heuristic_cur>heuristic_previous or min_dis<0.2*rs:
         mode=1
     else:
         mode=0
@@ -301,16 +306,23 @@ def check_along(cur_state, previous_state, scanned_curve, goal_point, rs, temp_g
 
 
 def check_off(cur_state, followed_curve, goal_point, rs, obstacles, step_len, end_points):
-
+    min_dis=get_closest_distance(cur_state,followed_curve)
     d_reach = np.linalg.norm(cur_state-goal_point)
     d_followed=get_closest_distance(goal_point,followed_curve)
 
     # is_intersect=check_intersection(cur_state, goal_point, end_points)
     # if is_intersect:
     #     mode=1
+    #     return mode
     # else:
     #     mode=0
+    #     return mode
+    if end_points==[]:
+        mode=0
+        return mode
 
+    print("d_reach",d_reach)
+    print("d_followwd",d_followed)
     if d_reach<d_followed :
         mode=0
     else:
@@ -342,14 +354,14 @@ def get_closest_distance(cur_state,scanned_curve):
 if __name__=="__main__":
 
     mymap = EnvMap(300, 300, 1)
-    mymap.add_polygon([120,90,210,90,210,180,120,180])
+    # mymap.add_polygon([120,90,210,90,210,180,120,180])
     # mymap.add_polygon([100,75,175,100,225,175,200,225,100,200,75,150])
     # mymap.add_polygon([125,100,175,125,150,175,125,200,75,175,75,125])
-    # mymap.add_circle(150, 150, 30)
+    mymap.add_circle(150, 150, 30)
     mymap.show_map()
     # obs = mymap.obstacles
-    start_point = [150, 50]
-    goal_point = [150, 160]
+    start_point = [100, 50]
+    goal_point = [145, 200]
 
 
     # occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
@@ -363,4 +375,4 @@ if __name__=="__main__":
     plt.plot(state[:,0],state[:,1], c='r', linewidth=2)
     plt.scatter(start_point[0],start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
-    plt.savefig('../image/tangent_bug_poly10.png')
+    plt.savefig('../image/tangent_bug_circle_14.png')
