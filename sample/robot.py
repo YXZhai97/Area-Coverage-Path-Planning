@@ -4,7 +4,7 @@ The property of the alpha agent is defined
 The method of the alpha agent is defined
 
 """
-from typing import List
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,16 +13,23 @@ import global_value as gv
 import env_map as env
 import methods as m
 import collections
+from tangentbug import *
 
 
 class Robot:
     number_of_robot = 0
 
     def __init__(self):
+        # robot parameters
         self.id = self.number_of_robot
-        self.rs = 6
-        self.rc = 12
-        self.dimension = 2
+        self.rs = gv.rs
+        self.rc = gv.rc
+        self.dimension = gv.dimension
+
+        # robot motion mode
+        # free space exploration 0
+        # boundary following 1
+        self.motion_mode=0
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
@@ -547,8 +554,9 @@ class Robot:
         return new_neighbour
 
     # todo: integrate tangent bug to the Robot Class
-    def tangent_bug(start_point, goal_point, env_map):
+    def tangent_bug(self, start_point, goal_point, env_map):
 
+        # import the functions from the tangentbug
         step_length = 1
         mode = 0  # motion to goal , mode=1-> boundary follow
 
