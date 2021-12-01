@@ -227,16 +227,16 @@ class EnvMap:
 
 
 if __name__=="__main__":
-    mymap = EnvMap(300, 300, 1)
-    mymap.add_circle(90, 60, 30)
-    mymap.add_circle(80,170,30)
-    mymap.add_polygon([100,100,160,180,160,250,70,280])
-    # mymap.floodFill(90,60,1)
+    mymap = EnvMap(50, 50, 1)
+    mymap.add_circle(30, 20, 10)
+    # mymap.add_circle(80,170,30)
+    # mymap.add_polygon([100,100,160,180,160,250,70,280])
+    # # mymap.floodFill(90,60,1)
     mymap.show_map()
-    print(mymap.obstacles)
-    first_obs=mymap.obstacles[0]
-    second_obs=mymap.obstacles[1]
-    third_obs = mymap.obstacles[2]
-    print(len(third_obs[0]))
+    # print(mymap.obstacles)
+    # first_obs=mymap.obstacles[0]
+    # second_obs=mymap.obstacles[1]
+    # third_obs = mymap.obstacles[2]
+    # print(len(third_obs[0]))
 
 

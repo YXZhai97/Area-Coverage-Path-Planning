@@ -1,6 +1,9 @@
 import math
 
 # robot parameters
+rs=6
+rc=12
+dimension=2
 robotList=[] # a list of robot
 d_alpha=12
 d_beta=6 # the min distance between beta and alpha

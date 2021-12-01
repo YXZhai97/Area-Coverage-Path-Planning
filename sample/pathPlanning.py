@@ -93,7 +93,5 @@ writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
 anim.save('../image/robot_path_animation11.mp4', writer=writervideo)
 # 2D static
 
-# todo the boundary is not modeled, no need to model the boundary
-# todo: robot moving out of the boundary, as long as the target points inside the boundary
-# todo check the matlab code
+
 
