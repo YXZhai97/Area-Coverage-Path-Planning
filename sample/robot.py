@@ -377,18 +377,19 @@ class Robot:
         self.target[time + 1] = new_target
         return new_target
 
-    def update_info_map(self, time):
+    def update_info_map(self, time, mymap):
 
         '''
         Args:
             time: give the time step as input
+            mymap: a map object
         Returns:
             no return, but the self.infomap and self.tarobsmap is updated
         '''
 
         # get the current state
         q = np.array(self.state[time, :2])
-
+        grid_map=mymap.grid_map
         # update the infomap and tarobsmap inside rs
         for x in range(gv.x_n):
             for y in range(gv.y_n):
@@ -404,7 +405,7 @@ class Robot:
                 if distance < self.rs:
                     self.infomap[y, x] = 1
 
-                if distance < self.rs and gv.env_map[y, x] == 1:
+                if distance < self.rs and grid_map[y, x] == 1:
                     self.tarobsmap[y, x] = -1
 
         # consider communication and map info exchange between robots with in rc
@@ -430,6 +431,19 @@ class Robot:
         update_percent(self.infomap,time)
 
 
+    def update_mode(self, time, mymap):
+
+        # after update the infomap and tarobsmap
+        # the nearest obstacle point should be checked to activate the tangent bug
+        obstacles = mymap.obstacles
+        cur_state = state[time, :2]
+        for obstacle in obstacles:
+            num_points=len(obstacle)
+
+
+
+        # check the intersection
+        pass
 
 
 
@@ -554,23 +568,13 @@ class Robot:
         return new_neighbour
 
     # todo: integrate tangent bug to the Robot Class
-    def tangent_bug(self, start_point, goal_point, env_map):
+    def t_bug(self, start_point, goal_point, env_map):
 
         # import the functions from the tangentbug
         step_length = 1
         mode = 0  # motion to goal , mode=1-> boundary follow
 
-        def update_obsmap():
-            pass
 
-        def get_endpoints():
-            pass
-
-        def go_straight():
-            pass
-
-        def boundary_follow():
-            pass
 
 
 def define_robot(number):

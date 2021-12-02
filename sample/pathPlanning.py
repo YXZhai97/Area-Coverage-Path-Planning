@@ -33,7 +33,7 @@ c_percent=np.zeros(gv.Iteration-1)
 for time in range(gv.Iteration-1):
     for robot in robotList:
         # update information map
-        robot.update_info_map(time)
+        robot.update_info_map(time, mymap)
         # calculate benefit value and target
         robot.update_target(time)
         # update robot state
