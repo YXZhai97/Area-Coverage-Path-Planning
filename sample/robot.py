@@ -30,6 +30,8 @@ class Robot:
         # free space exploration 0
         # boundary following 1
         self.motion_mode=0
+        # d_tan is the activation distance for tangent bug
+        self.d_tan=self.rs/4
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
@@ -430,21 +432,31 @@ class Robot:
 
         update_percent(self.infomap,time)
 
+    def update_motion_mode(self, time, mymap, new_target):
+        """
+        Args:
+            time: the time step
+            mymap: the obstacle grid map
+            new_target: the new_target from update target
 
-    def update_mode(self, time, mymap):
-
-        # after update the infomap and tarobsmap
-        # the nearest obstacle point should be checked to activate the tangent bug
-        obstacles = mymap.obstacles
-        cur_state = state[time, :2]
-        for obstacle in obstacles:
-            num_points=len(obstacle)
-
-
-
+        Returns: the motion_mode of the robot
+        """
+        cur_state=state[time, :2]
+        obstacles=mymap.obstacles
+        rs=self.rs
         # check the intersection
-        pass
+        # use the import tangent bug functions
+        is_intersect, intersect_end_points, circle_scanned=get_curve(obstacles, cur_state, new_target, rs)
+        if is_intersect:
+            min_dis=get_closest_distance(cur_state, intersect_end_points)
+            if min_dis<self.d_tan:
+                # switch to tangent bug mode
+                self.motion_mode=1
+        else:
+            # free space exploration
+            self.motion_mode=0
 
+        return self.motion_mode
 
 
     # def get_beta_agent(self, time):
@@ -568,11 +580,17 @@ class Robot:
         return new_neighbour
 
     # todo: integrate tangent bug to the Robot Class
-    def t_bug(self, start_point, goal_point, env_map):
-
-        # import the functions from the tangentbug
-        step_length = 1
-        mode = 0  # motion to goal , mode=1-> boundary follow
+    def t_bug(self, cur_state, new_targt, mymap):
+        """
+        Args:
+            cur_state: the current state
+            new_targt: the target point returned by update_target()
+            mymap: the map
+        Returns:
+            temp_target and new_state
+        """
+        # integrate the tangent_bug here
+        pass
 
 
 
