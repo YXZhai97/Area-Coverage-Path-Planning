@@ -32,7 +32,7 @@
 from math import *
 import numpy as np
 import matplotlib.pyplot as plt
-import random
+
 import time
 # a=np.zeros((4,6,6))
 # a[1,3,5]=2
@@ -43,34 +43,10 @@ import time
 # n=np.array(b)[0,:2]
 # print(n)
 
-neighbour=[[1,2,3,4],[5,6,7,8]]
-for n in neighbour:
-    print(n)
-print(len(neighbour))
-
-testM=np.array([[1,2,3,4],
-       [3,4,5,6]])
-
-print(testM[-1])
-newrow=np.zeros(4)
-testM=np.append(testM,[newrow],axis=0)
-print(testM)
 
 a=np.array([1,2,3])
 print(a*0.1)
 
-print(np.zeros(4))
-for m in testM:
-    m=np.append(m,1)
-    print(m)
-
-a=[1,2,3,4,5]
-b=[6,7,8,9,10]
-
-for i,j in zip(a,b):
-    print(i+j)
-
-print(5//2)
 
 fig1=plt.figure('Figure 1 with subplots', figsize=(10,4))
 subfig1=fig1.add_subplot(121)
@@ -249,12 +225,7 @@ print(len(nums[0]))
 num_iter=10
 nn=np.array([1,3])
 circle_scanned=np.zeros((num_iter,2))
-for i in range(10):
-    len_clos=1
-    circle_scanned[i]=nn
 
-print(circle_scanned)
-print(len_clos)
 
 p1=np.array([1,2])
 x,y=p1
@@ -265,28 +236,5 @@ print(4%2)
 end_points=np.array([[1,2],[3,4]])
 plt.scatter(end_points[:,0],end_points[:,1])
 
-angle=atan2(-1,-1)
-print(angle/pi*180)
-state=np.array([1,2])
-new_state=np.array([2,3])
-state=np.vstack((state,new_state))
-print(state)
-a=[1,2]
 
-nn=[]
-if nn==[]:
-    print("false")
-dy=-0.01
-dx=-1
-print('angle',atan2(dy,dx)/pi*180)
-dx=-1
-dy=0.01
-print('angle',atan2(dy,dx)/pi*180)
-print(cos(pi+pi/2))
-print(sin(pi+pi/2))
-dx=1
-dy=0.01
-print(atan2(dy,dx)/pi*180)
-dx=1
-dy=-0.01
-print(atan2(dy,dx)/pi*180)
+
