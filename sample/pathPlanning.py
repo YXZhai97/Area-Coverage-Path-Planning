@@ -32,12 +32,22 @@ c_percent=np.zeros(gv.Iteration-1)
 # todo there is index problem with time+1
 for time in range(gv.Iteration-1):
     for robot in robotList:
-        # update information map
+        # get current robot state
+        cur_state=robot.state[time, :2]
+        cur_target=robot.target[time]
+        # update information map and motion-mode
         robot.update_info_map(time, mymap)
-        # calculate benefit value and target
-        robot.update_target(time)
-        # update robot state
-        robot.update_state(time)
+        robot.update_motion_mode(time, mymap, cur_target)
+        # get motion mode
+        motion_mode=robot.motion_mode
+        # update the target based on the motion-mode
+        if motion_mode==1:
+            new_target=robot.update_target_tangent(time, cur_state, mymap)
+            robot.update_state_tangent(time)
+        else:
+            new_target=robot.update_target(time)
+            robot.update_state(time)
+
     # merge the infomap of the robots
     coverage_percent=merge_infomap(robotList)
     c_percent[time]=coverage_percent

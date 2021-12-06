@@ -37,6 +37,13 @@ class Robot:
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
+        self.followed_curve=[]
+        self.hit_point=[]
+        self.hit_time=0
+        self.previous_angle=0
+        self.step_len=1
+        self.boundary_follow_finished=False
+
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
@@ -175,9 +182,8 @@ class Robot:
         v_i = self.state[time, 2:]
         A = m.adjacency_alpha(gv.robotList)
         B = m.adjacency_beta(self.beta_neighbour, q_i)
+
         # print(B)
-
-
         # calculate the influence of alpha neighbour
         for robot_j in neighbour:
             j = robot_j.id
@@ -266,11 +272,9 @@ class Robot:
 
         return self.benefit_matrix
 
-
     # get the maximum value in benefit_matrix
     # todo review code
     def update_target(self, time):
-
         '''
         Args:
             time: get the time step
@@ -441,7 +445,7 @@ class Robot:
 
         Returns: the motion_mode of the robot
         """
-        cur_state=state[time, :2]
+        cur_state=self.state[time, :2]
         obstacles=mymap.obstacles
         rs=self.rs
         # check the intersection
@@ -457,6 +461,67 @@ class Robot:
             self.motion_mode=0
 
         return self.motion_mode
+
+    def update_target_tangent(self, time, cur_state, mymap):
+        cur_target=self.target[time]
+        obstacles=mymap.obstacles
+        x_n=mymap.x_n
+        y_n=mymap.y_n
+        rs=self.rs # sensor range
+        motion_mode=self.motion_mode
+        followed_curve=self.followed_curve
+        hit_point=self.hit_point
+        previous_angle=self.previous_angle
+        step_len=self.step_len
+        is_intersect, end_points, scanned_curve = get_curve(obstacles, cur_state, cur_target, rs)
+        followed_curve.append(scanned_curve)
+
+        if not is_intersect:
+            return cur_target
+        else:
+            temp_goal=get_heuristic_goal(cur_state, cur_target, end_points)
+
+        if motion_mode:
+            new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve)
+            self.previous_angle=new_angle
+            self.motion_mode=check_off(new_state, scanned_curve, cur_target, rs, obstacles, step_len, end_points)
+
+        return new_state
+
+
+
+
+
+
+
+
+
+
+    def update_state_tangent(self, time, new_state):
+
+        pass
+
+
+
+
+
+    def check_new_obstacle(self):
+        """
+        check if a nes obstacle is discovered
+        if new_obstacle found clean the self.followed_curve
+
+        Returns:
+
+        """
+        pass
+
+    def scann_rs(self):
+        """
+        scann the surrounding area
+        Returns: obstacle points
+
+        """
+        pass
 
 
     # def get_beta_agent(self, time):
@@ -591,7 +656,6 @@ class Robot:
         """
         # integrate the tangent_bug here
         pass
-
 
 
 
