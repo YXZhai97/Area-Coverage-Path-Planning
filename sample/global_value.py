@@ -1,8 +1,8 @@
 import math
 
 # robot parameters
-rs=6
-rc=12
+rs=4
+rc=10
 dimension=2
 robotList=[] # a list of robot
 d_alpha=12
@@ -36,8 +36,8 @@ k2=0.01
 rohgamma=0.2
 # simulation parameters
 robot_number=3
-T=5 # total simulation time
-step_size=0.01 # size of each step
+T=8 # total simulation time
+step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number
 rate=1
 

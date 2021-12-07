@@ -199,7 +199,7 @@ class EnvMap:
 
         # define the color map
         color_map = {1: np.array([0, 0, 0]),  # 1 is obstacle filled with black color
-                     0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
+                     0: np.array([0, 102, 204])}  # 0 is free space filled with blue color
 
         # define a sD matrix to store the color value
         data_3d = np.ndarray(shape=(self.y_n, self.x_n, 3), dtype=int)

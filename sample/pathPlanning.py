@@ -23,7 +23,7 @@ mymap = EnvMap(50, 50, 1)
 # add a circle
 # mymap.add_circle(100, 150, 30)
 # add a triangle
-# mymap.add_polygon([50,50,70,80,80,30])
+mymap.add_polygon([10,10,25,10,25,25,10,25])
 mymap.show_map()
 
 # iteration
@@ -43,7 +43,7 @@ for time in range(gv.Iteration-1):
         # update the target based on the motion-mode
         if motion_mode==1:
             new_target=robot.update_target_tangent(time, cur_state, mymap)
-            robot.update_state_tangent(time)
+            robot.update_state_tangent(time, new_target)
         else:
             new_target=robot.update_target(time)
             robot.update_state(time)
@@ -68,39 +68,44 @@ for robot in robotList:
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target11.png')
+plt.savefig('../image/target12.png')
 plt.show()
 
 
 # plot the robot path
-figure3=plt.figure('robot path ', figsize=(8,5))
-for robot in robotList:
-    plt.plot(robot.state[:, 0], robot.state[:, 1])
-plt.xlabel("X coordinate [m]")
-plt.ylabel("Y coordinate [m]")
-plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/path11.png')
+def plot_robot_path(robotList, mymap):
 
+    figure3=plt.figure('robot path ', figsize=(7,7))
+    for robot in robotList:
+        plt.plot(robot.state[:, 0], robot.state[:, 1])
+    for obstacle in mymap.obstacles:
+        plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2 )
+    plt.xlabel("X coordinate [m]")
+    plt.ylabel("Y coordinate [m]")
+    plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
+    plt.savefig('../image/path12.png')
+
+plot_robot_path(robotList, mymap)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
 subfig1=figure4.add_subplot(221)
-show_infomap(robotList[0])
+show_infomap(robotList[0], mymap)
 subfig2=figure4.add_subplot(222)
-show_infomap(robotList[1])
+show_infomap(robotList[1], mymap)
 subfig3=figure4.add_subplot(223)
-show_infomap(robotList[2])
+show_infomap(robotList[2], mymap)
 subfig4=figure4.add_subplot(224)
 show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap11.png')
+plt.savefig('../image/infomap12.png')
 
 
 
 # 2D animation
 anim=visualize(robotList)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation11.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation12.mp4', writer=writervideo)
 # 2D static
 
 

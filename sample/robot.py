@@ -411,6 +411,7 @@ class Robot:
                 if distance < self.rs:
                     self.infomap[y, x] = 1
 
+                # update the obstacles
                 if distance < self.rs and grid_map[y, x] == 1:
                     self.tarobsmap[y, x] = -1
 
@@ -499,7 +500,7 @@ class Robot:
 
     def update_state_tangent(self, time, new_state):
 
-        pass
+        self.state[time, :2]=new_state
 
 
 
@@ -683,7 +684,8 @@ def show_robot(robotList):
         plt.annotate(robot.id, (robot.initial_target[0], robot.initial_target[1]))
         print('initial state:', robot.initial_state)
         print('initial target:', robot.initial_target)
-
+    plt.xlim(0, gv.x_bound )
+    plt.ylim(0, gv.y_bound )
     plt.title('The initial state of robots')
     # add x-label
     plt.xlabel('x-coordinate')
@@ -694,23 +696,29 @@ def show_robot(robotList):
     plt.show()
     plt.savefig('../image/initial_state.png')
 
-def show_infomap(robot):
+def show_infomap(robot, mymap):
     '''
 
     Args:
         robot: robot object
+        mymap: the env_map object
 
     Returns:
         plot the information map of that robot
 
     '''
+    for x in range(gv.x_n):
+        for y in range(gv.y_n):
+            if robot.tarobsmap[y,x]==-1:
+                robot.infomap[y,x]=-1
 
     # flip the information map
-    flip_infomap=np.flipud(robot.infomap)
+    # flip_infomap=np.flipud(robot.infomap)
 
     # define the color map
-    color_map = {1: np.array([250, 128, 114]),  # 1 is visited area filled with red
-                 0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
+    color_map = {1: np.array([255, 51, 51]),  # 1 is visited area filled with red
+                 0: np.array([0, 102, 204]),  # 0 is free space filled with blue color
+                 -1: np.array([192,192,192])}  # -1 is obstacle filled with gray color
 
     # define a sD matrix to store the color value
     data_3d = np.ndarray(shape=(gv.y_n, gv.x_n, 3), dtype=int)
@@ -719,7 +727,11 @@ def show_infomap(robot):
     # plot the grid_map with color
     for i in range(gv.y_n):
         for j in range(gv.x_n):
-            data_3d[i][j] = color_map[flip_infomap[i][j]]
+            data_3d[i][j] = color_map[robot.infomap[i][j]]
+
+    # plot the obstacles on the map
+    for obstacle in mymap.obstacles:
+        plt.plot(obstacle[0], obstacle[1])
 
     # figure = plt.figure('2D grid map', figsize=(5, 5))
     # add label
@@ -728,7 +740,7 @@ def show_infomap(robot):
     plt.title("Information map of robot %i" % robot.id)
 
     # show image
-    plt.imshow(data_3d)
+    plt.imshow(data_3d, origin='lower')
     plt.show()
 
 
@@ -751,11 +763,11 @@ def show_merge_infomap(robotList):
     area = gv.x_n * gv.y_n
     percent = coverage_area / area
 
-    flip_infomap = np.flipud(merged_map)
+    # flip_infomap = np.flipud(merged_map)
 
     # define the color map
-    color_map = {1: np.array([250, 128, 114]),  # 1 is visited area filled with red
-                 0: np.array([102, 178, 255])}  # 0 is free space filled with blue color
+    color_map = {1: np.array([255, 51, 51]),  # 1 is visited area filled with red
+                 0: np.array([0, 102, 204])}  # 0 is free space filled with blue color
 
     # define a sD matrix to store the color value
     data_3d = np.ndarray(shape=(gv.y_n, gv.x_n, 3), dtype=int)
@@ -763,7 +775,7 @@ def show_merge_infomap(robotList):
     # plot the grid_map with color
     for i in range(gv.y_n):
         for j in range(gv.x_n):
-            data_3d[i][j] = color_map[flip_infomap[i][j]]
+            data_3d[i][j] = color_map[merged_map[i][j]]
 
     # add label
     plt.xlabel("X coordinate [m]")
@@ -771,7 +783,7 @@ def show_merge_infomap(robotList):
     plt.title("Merged Information Map with Coverage Percent %1.3f " % percent)
 
     # show image
-    plt.imshow(data_3d)
+    plt.imshow(data_3d, origin='lower')
 
 def merge_infomap(robotList):
     '''
@@ -866,7 +878,7 @@ if __name__ == "__main__":
     mymap = env.EnvMap(300, 300, 1)
     mymap.add_circle(90, 60, 45)
     gv.env_map = mymap.grid_map
-    gv.robotList[1].update_info_map(1)
+    gv.robotList[1].update_info_map(1,mymap)
     print(gv.robotList[1].infomap)
 
     # gv.robotList[1].get_beta(1)
