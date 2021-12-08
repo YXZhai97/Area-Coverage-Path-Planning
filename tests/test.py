@@ -236,5 +236,14 @@ print(4%2)
 end_points=np.array([[1,2],[3,4]])
 plt.scatter(end_points[:,0],end_points[:,1])
 
+a=0
+if a==0:
+    a=1
+    print("inside if ")
+elif a==1:
+    print("inside elif")
+else:
+    print("inside else")
+
 
 
