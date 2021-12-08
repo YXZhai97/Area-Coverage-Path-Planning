@@ -41,10 +41,19 @@ for time in range(gv.Iteration-1):
         # get motion mode
         motion_mode=robot.motion_mode
         # update the target based on the motion-mode
-        if motion_mode==1:
-            new_target=robot.update_target_tangent(time, cur_state, mymap)
-            robot.update_state_tangent(time, new_target)
+        if motion_mode==1 and not robot.inside_tangent_planner :
+            print("start boundary follow")
+            print("motion-mode:", motion_mode)
+            targets=robot.tangent_bug_planner(time, mymap)
+            cur_target = robot.get_target_from_tangent(time)
+            robot.update_state_tangent(time, cur_target)
+
+        elif motion_mode==1 and time<=robot.tangent_end_time:
+            cur_target=robot.get_target_from_tangent(time)
+            robot.update_state_tangent(time, cur_target)
+
         else:
+            robot.reset_tangent()
             new_target=robot.update_target(time)
             robot.update_state(time)
 
@@ -85,7 +94,9 @@ def plot_robot_path(robotList, mymap):
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
     plt.savefig('../image/path12.png')
 
+
 plot_robot_path(robotList, mymap)
+
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))

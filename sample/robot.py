@@ -37,12 +37,12 @@ class Robot:
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.followed_curve=[]
-        self.hit_point=[]
-        self.hit_time=0
-        self.previous_angle=0
         self.step_len=1
-        self.boundary_follow_finished=False
+        self.tangent_end_time=0
+        self.tangent_start_time=0
+        self.inside_tangent_planner=False
+        self.tangent_targets=[]
+
 
 
         # initial_state=[x,y,v_x,v_y]
@@ -211,23 +211,24 @@ class Robot:
         # first get the neighbour
         # todo repulsive force too large, when robots meet, separate too quick
 
-        if len(beta_neighbour)>0:
-            k = 0
-            for beta in beta_neighbour:
-                q_beta = np.array(beta)[:2]
-                v_beta = np.array(beta)[2:]
-                # todo ajacency matrix B
-                b_ik = B[k]  # i and k
-                # print(b_ik)
-                u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
-                # u_beta_k_2 = np.multiply((v_beta - v_i),gv.c2_beta * b_ik )
-                u_beta_k_2 = (gv.c2_beta * b_ik) * (v_beta - v_i)
-                u_beta += u_beta_k_1 + u_beta_k_2
-                k += 1
-
-        # if robot out of the boundary, the repulsion force is cancelled
-        if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
-            u_beta=0
+        # the influence of beta-agent is deleted
+        # if len(beta_neighbour)>0:
+        #     k = 0
+        #     for beta in beta_neighbour:
+        #         q_beta = np.array(beta)[:2]
+        #         v_beta = np.array(beta)[2:]
+        #         # todo adjacency matrix B
+        #         b_ik = B[k]  # i and k
+        #         # print(b_ik)
+        #         u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
+        #         # u_beta_k_2 = np.multiply((v_beta - v_i),gv.c2_beta * b_ik )
+        #         u_beta_k_2 = (gv.c2_beta * b_ik) * (v_beta - v_i)
+        #         u_beta += u_beta_k_1 + u_beta_k_2
+        #         k += 1
+        #
+        # # if robot out of the boundary, the repulsion force is cancelled
+        # if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
+        #     u_beta=0
 
         # calculate the influence of gamma_agent
         # target is Iteration*2 dimensional matrix
@@ -463,44 +464,131 @@ class Robot:
 
         return self.motion_mode
 
-    def update_target_tangent(self, time, cur_state, mymap):
-        cur_target=self.target[time]
-        obstacles=mymap.obstacles
-        x_n=mymap.x_n
-        y_n=mymap.y_n
-        rs=self.rs # sensor range
-        motion_mode=self.motion_mode
-        followed_curve=self.followed_curve
-        hit_point=self.hit_point
-        previous_angle=self.previous_angle
-        step_len=self.step_len
-        is_intersect, end_points, scanned_curve = get_curve(obstacles, cur_state, cur_target, rs)
-        followed_curve.append(scanned_curve)
+    def tangent_bug_planner(self, time, mymap):
+        start_point=self.state[time, :2]
+        inner_states = start_point  # the state array will be appended
+        goal_point = self.target[time]
+        obs_map = mymap.grid_map
+        obstacles = mymap.obstacles
+        x_n = mymap.x_n
+        y_n = mymap.y_n
+        info_map = np.zeros((y_n, x_n))
+        rs = self.rs
+        step_len = self.step_len
+        inner_time = 0
+        time_limit = 400  # end the simulation with time limit
+        mode = 0  # mode=0 motion to goal, mode=1 boundary follow
+        # get the intersection curve and endpoints
+        followed_curve = []
+        hit_point = []
+        hit_time = 0
+        boundary_follow_finished = False
 
-        if not is_intersect:
-            return cur_target
-        else:
-            temp_goal=get_heuristic_goal(cur_state, cur_target, end_points)
+        # start the main while loop
+        while True:
+            if inner_time == 0:
+                cur_state = inner_states
+            else:
+                cur_state = inner_states[inner_time]
 
-        if motion_mode:
-            new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve)
-            self.previous_angle=new_angle
-            self.motion_mode=check_off(new_state, scanned_curve, cur_target, rs, obstacles, step_len, end_points)
+            is_intersect, end_points, scanned_curve = get_curve(obstacles, cur_state, goal_point, rs)
+            followed_curve.append(scanned_curve)
+            print("end points", end_points)
 
-        return new_state
+            if not is_intersect:
+                print("not intersect")
+                temp_goal = goal_point
+            else:
+                temp_goal = get_heuristic_goal(cur_state, goal_point, end_points)
+            print("temp goal", temp_goal)
+
+            if mode == 0:  # go straight to goal
+                new_state = go_straight(cur_state, temp_goal, step_len)
+                mode = check_along(new_state, cur_state, scanned_curve, goal_point, rs, temp_goal)
+                if mode:
+                    print("end motion to goal, start boundary following")
+                    hit_point = new_state  # store the boundary following point
+                    print("hit point", hit_point)
+                    hit_time = inner_time
+                    print("hit time", hit_time)
+                    dy = temp_goal[1] - new_state[1]
+                    dx = temp_goal[0] - new_state[0]
+                    previous_angle = atan2(dy, dx)
+            else:
+                new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve)
+                previous_angle = new_angle
+                mode = check_off(new_state, scanned_curve, goal_point, rs, obstacles, step_len, end_points)
+
+                if mode == 0:
+                    print("end boundary following, start motion to goal ")
+
+            inner_states = np.vstack((inner_states, new_state))
+            print("time step:", inner_time)
+
+            if mode == 1 and np.linalg.norm(new_state - hit_point) < rs and inner_time - hit_time > 20:
+                boundary_follow_finished = True
+
+            if (new_state == goal_point).all():
+                print("Goal reached")
+                break
+            elif inner_time > time_limit:
+                print("Time limit reached")
+                break
+            elif boundary_follow_finished:
+                print("Boundary following finished")
+                break
+            else:
+                inner_time += 1
+        tangent_start_time=time
+        tangent_dauration=inner_time
+        tangent_end_time=tangent_start_time+tangent_dauration
+        self.tangent_end_time=tangent_end_time
+        self.tangent_start_time=tangent_start_time
+        self.tangent_targets=inner_states
+        self.inside_tangent_planner=True
+        return inner_states
 
 
 
 
 
 
+    def update_state_tangent(self, time, target):
+
+        cur_state=self.state[time, :2]
+        cur_v=self.state[time,2:]
+        cur_target=target
+        u_gamma = -gv.c1_gamma * (cur_state - cur_target) - gv.c2_gamma * cur_v
+
+        # limit gamma attraction
+        norm_u_gamma = np.linalg.norm(u_gamma)
+        if norm_u_gamma > 150:
+            u_gamma = 150 * u_gamma / norm_u_gamma
+
+        # calculate the deviation
+        d_v = u_gamma * gv.step_size
+        d_position = cur_v* gv.step_size
+
+        # add new state vector
+        self.state[time + 1, :2] = cur_state + d_position
+        self.state[time + 1, 2:] = cur_v + d_v
+
+    def get_target_from_tangent(self, time):
+
+        inner_time=time-self.tangent_start_time
+        cur_target=self.tangent_targets[inner_time]
+        self.target[time]=cur_target
+
+        return cur_target
 
 
+    def reset_tangent(self):
+        self.tangent_end_time = 0
+        self.tangent_start_time = 0
+        self.inside_tangent_planner = False
+        self.tangent_targets = []
 
 
-    def update_state_tangent(self, time, new_state):
-
-        self.state[time, :2]=new_state
 
 
 

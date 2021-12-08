@@ -110,6 +110,7 @@ def get_curve(obstacles, cur_state, goal_point, rs):
     """
     # number of obstacles defined
     num_obs = len(obstacles)
+
     cur_x = cur_state[0]
     cur_y = cur_state[1]
     num_iter = 360
