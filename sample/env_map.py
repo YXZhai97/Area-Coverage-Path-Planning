@@ -234,8 +234,15 @@ if __name__=="__main__":
     # # mymap.floodFill(90,60,1)
     mymap.show_map()
     print(mymap.obstacles)
+    bounding_box=[]
     for obs in mymap.obstacles:
         print(len(obs[0]))
+        x_max, y_max=max(obs[0]), max(obs[1])
+        print("xmax, ymax", x_max, y_max)
+        bounding_box.append([x_max, y_max])
+
+    print(bounding_box)
+
     # first_obs=mymap.obstacles[0]
     # second_obs=mymap.obstacles[1]
     # third_obs = mymap.obstacles[2]

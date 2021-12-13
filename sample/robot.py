@@ -24,6 +24,7 @@ class Robot:
         self.id = self.number_of_robot
         self.rs = gv.rs
         self.rc = gv.rc
+        self.r_tan=gv.r_tan
         self.dimension = gv.dimension
 
         # robot motion mode
@@ -69,47 +70,71 @@ class Robot:
     def add_agent(cls):
         cls.number_of_robot += 1
 
-    def random_init_state(self):
+    def random_init_state(self, mymap):
         """
 
         Returns: set self.initial_state a random value [x,y,0,0] inside boundary
 
         """
+        # get the obstacles from mymap
+        obstacles=mymap.obstacles
+        bounding_boxes=[] # store the min max value of the obstacles
+
+        # get the x_min, x_max, y_min, y_max of the obstacles
+        for obstacle in obstacles:
+            x_min, y_min=min(obstacle[0]), min(obstacle[1])
+            x_max, y_max=max(obstacle[0]), max(obstacle[1])
+            bounding_boxes.append([x_min, x_max, y_min, y_max])
+
         # Define initial velocity v_x, v_y
         self.initial_state[2] = np.random.uniform(0, 1) * gv.v_bound
         self.initial_state[3] = np.random.uniform(0, 1) * gv.v_bound
         # i is the current robot index
         i = self.id
-        flag = 0
+        flag_obs=0
+        flag_distance = 0
 
         # Define initial state x, y
-        while flag <= i:
+        while flag_distance <= i:
             # sample x_i y_i from uniform distribution
             # todo fix the random initial later
-            x_i = np.random.uniform(0, 1) * gv.x_bound
-            y_i = np.random.uniform(0, 1) * gv.y_bound
+            while not flag_obs:
+                inside=0
+                x_i = np.random.uniform(0, 1) * gv.x_bound
+                y_i = np.random.uniform(0, 1) * gv.y_bound
+                for bound in bounding_boxes:
+                    if bound[0]-self.r_tan<x_i<bound[1]+self.r_tan and bound[2]-self.r_tan<y_i<bound[3]+self.r_tan:
+                        inside=1
+                        break
+                    else:
+                        continue
+                if inside:
+                    flag_obs=0
+                else:
+                    flag_obs=1
 
+            flag_obs=0
             # compare x_i y_i to previously generated initial sate
             #  check the distance between them
             for j in range(i):
                 x_j = gv.robotList[j].initial_state[0]
                 y_j = gv.robotList[j].initial_state[1]
+                # check the distance with other agents
                 distance = np.linalg.norm([x_i - x_j, y_i - y_j])
-                # not consider initial state inside the obstacle
-                # Todo consider the obstacle
                 if distance < gv.d_alpha:
-                    flag = 0
+                    flag_distance = 0
                     break
                 else:
-                    flag += 1
+                    flag_distance += 1
             # if the distance between all initial state fulfill the condition
-            if flag == i:
+            if flag_distance == i:
                 gv.robotList[i].initial_state[0] = x_i
                 gv.robotList[i].initial_state[1] = y_i
 
                 # the initial state is [x,y,0,0] with initial velocity 0
                 gv.robotList[i].state[0, :] = [x_i, y_i, 0, 0]
                 break
+
 
     def random_init_target(self):
         """
@@ -453,11 +478,10 @@ class Robot:
         # check the intersection
         # use the import tangent bug functions
         is_intersect, intersect_end_points, circle_scanned=get_curve(obstacles, cur_state, new_target, rs)
-        if is_intersect:
-            min_dis=get_closest_distance(cur_state, intersect_end_points)
-            if min_dis<self.d_tan:
-                # switch to tangent bug mode
-                self.motion_mode=1
+        # check the distance
+        min_dis=get_closest_distance(cur_state, circle_scanned)
+        if is_intersect and min_dis<self.r_tan:
+            self.motion_mode=1
         else:
             # free space exploration
             self.motion_mode=0
@@ -483,9 +507,11 @@ class Robot:
         hit_point = []
         hit_time = 0
         boundary_follow_finished = False
-
+        previous_angle=0
         # start the main while loop
+
         while True:
+
             if inner_time == 0:
                 cur_state = inner_states
             else:
@@ -540,7 +566,7 @@ class Robot:
             else:
                 inner_time += 1
         tangent_start_time=time
-        tangent_dauration=inner_time
+        tangent_dauration=inner_time+2
         tangent_end_time=tangent_start_time+tangent_dauration
         self.tangent_end_time=tangent_end_time
         self.tangent_start_time=tangent_start_time
@@ -549,7 +575,12 @@ class Robot:
         return inner_states
 
 
-
+    # check if target inside obstacle
+    def check_inside_obstacle(self, cur_target, mymap):
+        x=cur_target[0]
+        y=cur_target[1]
+        row=y
+        pass
 
 
 
@@ -763,7 +794,7 @@ def define_robot(number):
 
 
 # show the robot initial state and target in plot
-def show_robot(robotList):
+def show_robot(robotList, mymap):
     figure0 = plt.figure('robot initial state ', figsize=(5, 5))
     for robot in robotList:
         plt.scatter(robot.initial_state[0], robot.initial_state[1])
@@ -772,6 +803,11 @@ def show_robot(robotList):
         plt.annotate(robot.id, (robot.initial_target[0], robot.initial_target[1]))
         print('initial state:', robot.initial_state)
         print('initial target:', robot.initial_target)
+
+    obstacles=mymap.obstacles
+    for obstacle in obstacles:
+        plt.plot(obstacle[0], obstacle[1])
+
     plt.xlim(0, gv.x_bound )
     plt.ylim(0, gv.y_bound )
     plt.title('The initial state of robots')
@@ -971,5 +1007,9 @@ if __name__ == "__main__":
 
     # gv.robotList[1].get_beta(1)
     # print(gv.robotList[1].beta_neighbour)
+    robotList = define_robot(3)
+
+
+
 
 

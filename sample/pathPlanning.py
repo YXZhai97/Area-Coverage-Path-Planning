@@ -1,4 +1,4 @@
-from env_map import *
+
 from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
@@ -6,25 +6,24 @@ import matplotlib.animation as animation
 The main script for path planning 
 """
 
-# robot initialization
-# define three robot and initialize the state and target
-robotList = define_robot(gv.robot_number)
-
-for robot in robotList:
-    robot.random_init_state()
-    robot.random_init_target()
-    print(robot.state[0])  # test the initial state has been passed to the state
-    print(robot.target[0])
-show_robot(robotList)
-
 # environment initialization
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(50, 50, 1)
 # add a circle
 # mymap.add_circle(100, 150, 30)
 # add a triangle
-mymap.add_polygon([10,10,25,10,25,25,10,25])
+# mymap.add_polygon([10,10,25,10,25,25,10,25])
 mymap.show_map()
+
+# robot initialization
+# define three robot and initialize the state and target
+robotList = define_robot(gv.robot_number)
+for robot in robotList:
+    robot.random_init_state(mymap)
+    robot.random_init_target()
+    print(robot.state[0])  # test the initial state has been passed to the state
+    print(robot.target[0])
+show_robot(robotList, mymap)
 
 # iteration
 # monitor the coverage percent
@@ -34,9 +33,11 @@ for time in range(gv.Iteration-1):
     for robot in robotList:
         # get current robot state
         cur_state=robot.state[time, :2]
-        cur_target=robot.target[time]
         # update information map and motion-mode
         robot.update_info_map(time, mymap)
+        # if robot.motionmode==0:
+        #     robot.update_target(time)
+        cur_target = robot.target[time]
         robot.update_motion_mode(time, mymap, cur_target)
         # get motion mode
         motion_mode=robot.motion_mode
@@ -48,14 +49,15 @@ for time in range(gv.Iteration-1):
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
 
-        elif motion_mode==1 and time<=robot.tangent_end_time:
+        elif robot.inside_tangent_planner and time<robot.tangent_end_time:
             cur_target=robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
 
         else:
             robot.reset_tangent()
-            new_target=robot.update_target(time)
+            robot.update_target(time)
             robot.update_state(time)
+
 
     # merge the infomap of the robots
     coverage_percent=merge_infomap(robotList)
@@ -74,10 +76,13 @@ figure2=plt.figure('robot target position', figsize=(5,5))
 for robot in robotList:
     # plt.plot(robot.state[:, 0], robot.state[:, 1])
     plt.scatter(robot.target[:,0],robot.target[:,1])
+for obstacle in mymap.obstacles:
+    plt.plot(obstacle[0], obstacle[1])
+
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target12.png')
+plt.savefig('../image/target14.png')
 plt.show()
 
 
@@ -92,32 +97,32 @@ def plot_robot_path(robotList, mymap):
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path12.png')
+    plt.savefig('../image/path14.png')
 
 
 plot_robot_path(robotList, mymap)
 
+# 2D animation
+anim=visualize(robotList, mymap)
+writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
+anim.save('../image/robot_path_animation14.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
 subfig1=figure4.add_subplot(221)
 show_infomap(robotList[0], mymap)
-subfig2=figure4.add_subplot(222)
-show_infomap(robotList[1], mymap)
-subfig3=figure4.add_subplot(223)
-show_infomap(robotList[2], mymap)
-subfig4=figure4.add_subplot(224)
-show_merge_infomap(robotList)
+# subfig2=figure4.add_subplot(222)
+# show_infomap(robotList[1], mymap)
+# subfig3=figure4.add_subplot(223)
+# show_infomap(robotList[2], mymap)
+# subfig4=figure4.add_subplot(224)
+# show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap12.png')
+plt.savefig('../image/infomap14.png')
 
 
 
-# 2D animation
-anim=visualize(robotList)
-writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation12.mp4', writer=writervideo)
-# 2D static
+
 
 
 

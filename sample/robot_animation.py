@@ -9,7 +9,7 @@ import numpy as np
 import global_value as gv
 
 
-def visualize(robot_list):
+def visualize(robot_list, mymap):
 
 
     fig = plt.figure()
@@ -17,6 +17,8 @@ def visualize(robot_list):
     line,=ax.plot([],[],'ro')
     plt.xlim(-10,gv.x_bound+10)
     plt.ylim(-10,gv.y_bound+10)
+    for obstacle in mymap.obstacles:
+        plt.plot(obstacle[0], obstacle[1])
     plt.title("robot motion animation")
     plt.xlabel("x coordinate")
     plt.ylabel("y coordinate")
