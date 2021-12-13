@@ -246,4 +246,25 @@ else:
     print("inside else")
 
 
+x=13.5
+n_x=x%2
+n=x//2
+print(n_x,n)
+
+follow=np.zeros(2)
+
+alist=np.array([[1,2],[3,4],[1,2],[5,6],[0,0],[0,0],[0,0]])
+blist=np.array([[1,1],[3,3],[3,4]])
+print (list(map(list,set(map(tuple,alist)))))
+follow=np.vstack((follow,alist))
+follow=np.vstack((follow,blist))
+follow=list(map(list,set(map(tuple,follow))))
+follow.remove([0,0])
+print(follow)
+for it in follow:
+    print(it)
+
+
+
+
 
