@@ -27,16 +27,17 @@ def tangent_bug(start_point, goal_point, my_map):
     x_n = my_map.x_n
     y_n = my_map.y_n
     info_map = np.zeros((y_n, x_n))
-    rs = 6
+    rs = 4
     step_len = 1
     time=0
-    time_limit=400 # end the simulation with time limit
+    time_limit=100 # end the simulation with time limit
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
     followed_curve=np.zeros(2)
     hit_point=[]
     hit_time=0
     boundary_follow_finished=False
+
 
     # start the main while loop
     while True:
@@ -51,7 +52,8 @@ def tangent_bug(start_point, goal_point, my_map):
         followed_curve=list(map(list,set(map(tuple,followed_curve))))
         print("end points", end_points)
 
-        if not is_intersect or mode==0:
+
+        if end_points==[] or mode==0:
             print("not intersect")
             temp_goal = goal_point
         else:
@@ -97,7 +99,7 @@ def tangent_bug(start_point, goal_point, my_map):
             break
         else:
             time+=1
-    return state, followed_curve
+    return state
 
 
 def get_curve(obstacles, cur_state, goal_point, rs):
@@ -115,7 +117,7 @@ def get_curve(obstacles, cur_state, goal_point, rs):
 
     cur_x = cur_state[0]
     cur_y = cur_state[1]
-    num_iter = 720
+    num_iter = 360
     angle_space = np.linspace(-pi, pi, num_iter)
     angle_step = 2 * pi / num_iter
 
@@ -177,7 +179,7 @@ def get_curve(obstacles, cur_state, goal_point, rs):
                 intersect_end_points=ep
                 break
 
-    return is_intersect, intersect_end_points, circle_scanned
+    return is_intersect, end_points, circle_scanned
 
 
 def check_intersection(cur_p, goal_p, end_points):
@@ -195,18 +197,31 @@ def check_intersection(cur_p, goal_p, end_points):
     o1 = end_points[0]
     o2 = end_points[1]
 
-    if cur_p[0] != goal_p[0]:
-        multi = (o1[1] - get_line(cur_p, goal_p, o1[0])) * (o2[1] - get_line(cur_p, goal_p, o2[0]))
-    else:
-        multi = (o1[0] - cur_p[0]) * (o2[0] - goal_p[0])
+    def orientation(p,q,r):
+        val = ((q[1] - p[1]) * (r[0] - q[0])) - ((q[0] - p[0]) * (r[1] - q[1]))
+        if val == 0:
+            return 0
+        return 1 if val > 0 else -1
 
+    def on_segment(p, q, r):
+        if r[0] <= max(p[0], q[0]) and r[0] >= min(p[0], q[0]) and r[1] <= max(p[1], q[1]) and r[1] >= min(p[1], q[1]):
+            return True
+        return False
 
-    if multi > 0:
-        is_intersect = False
-    else:
-        is_intersect = True
+    ori1=orientation(o1, o2, cur_p)
+    ori2 = orientation(o1, o2, goal_p)
+    ori3 = orientation(cur_p, goal_p, o1)
+    ori4 = orientation(cur_p, goal_p, o2)
 
-    return is_intersect
+    if ori1 != ori2 and ori3 != ori4:
+        return True
+    if ori1 == 0 and on_segment(o1, o2, cur_p): return True
+    if ori2 == 0 and on_segment(o1, o2, goal_p): return True
+    if ori3 == 0 and on_segment(cur_p, goal_p, o1): return True
+    if ori4 == 0 and on_segment(cur_p, goal_p, o2): return True
+
+    return False
+
 
 
 def get_line(p1, p2, x):
@@ -303,7 +318,7 @@ def check_along(cur_state, previous_state, curve, goal_point, rs, temp_goal):
     min_dis=get_closest_distance(cur_state,curve)
     heuristic_previous=np.linalg.norm(previous_state-goal_point)
     heuristic_cur=np.linalg.norm(cur_state-goal_point)
-    if heuristic_cur>heuristic_previous or min_dis<0.2*rs:
+    if heuristic_cur>heuristic_previous or min_dis<0.5*rs:
         mode=1
     else:
         mode=0
@@ -356,20 +371,18 @@ def get_closest_distance(state, curve):
             min_dis=distance
     return min_dis
 
-
-
-if __name__=="__main__":
-
-    mymap = EnvMap(300, 300, 1)
-    # mymap.add_polygon([120,90,210,90,210,180,120,180])
-    mymap.add_polygon([100,75,175,100,225,175,200,225,100,200,75,150])
-    # mymap.add_polygon([125,100,175,125,150,175,125,200,75,175,75,125])
+def test_tangentbug():
+    mymap = EnvMap(50, 50, 1)
+    # mymap.add_polygon([120,90,210,90,210,180,120,180]) # square
+    # mymap.add_polygon([120, 90, 160, 90, 160, 120, 120, 120]) # small rectangle
+    # mymap.add_polygon([100,75,175,100,225,175,200,225,100,200,75,150]) # polygon
+    # mymap.add_polygon([125,100,175,125,150,175,125,200,75,175,75,125]) # polygon
+    mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
     # mymap.add_circle(150, 150, 30)
     mymap.show_map()
     # obs = mymap.obstacles
-    start_point = [150, 60]
-    goal_point = [100, 150]
-
+    start_point = [28, 9.9]
+    goal_point = [24.5, 10.5]
 
     # occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
     # # print(occu)
@@ -378,11 +391,57 @@ if __name__=="__main__":
 
     # print(get_line([1,2],[8,0],3))
 
-    state, follow=tangent_bug(start_point,goal_point, mymap)
-    plt.plot(state[:,0],state[:,1], c='r', linewidth=2)
-    plt.scatter(start_point[0],start_point[1], c='r')
+    state = tangent_bug(start_point, goal_point, mymap)
+    plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
+    plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
-    plt.savefig('../image/tangent_bug_poly_14.png')
-    print(follow)
-    print(len(follow))
+    plt.savefig('../image/tangent_bug_poly_18.png')
+
+
+def test_get_curve():
+    mymap = EnvMap(50, 50, 1)
+    mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
+    mymap.show_map()
+    obstacles=mymap.obstacles
+    cur_state=[26,23]
+    goal_point=[24,11]
+    rs=3
+    is_intersect, intersect_end_points, circle_scanned=get_curve(obstacles, cur_state, goal_point, rs)
+
+if __name__=="__main__":
+    # mymap = EnvMap(50, 50, 1)
+    # mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
+    # mymap.show_map()
+    # obstacles = mymap.obstacles
+    # cur_state = [26, 23]
+    # goal_point = [24, 11]
+    # rs = 3
+    # is_intersect, intersect_end_points, circle_scanned, circle_occupied, end_points = get_curve(obstacles, cur_state, goal_point, rs)
+
+    mymap = EnvMap(50, 50, 1)
+    # mymap.add_polygon([120,90,210,90,210,180,120,180]) # square
+    # mymap.add_polygon([120, 90, 160, 90, 160, 120, 120, 120]) # small rectangle
+    # mymap.add_polygon([100,75,175,100,225,175,200,225,100,200,75,150]) # polygon
+    # mymap.add_polygon([125,100,175,125,150,175,125,200,75,175,75,125]) # polygon
+    mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
+    # mymap.add_circle(150, 150, 30)
+    mymap.show_map()
+    # obs = mymap.obstacles
+    start_point = [29, 9.9]
+    goal_point = [22.5, 14.5]
+
+    # occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
+    # # print(occu)
+    # # print(scanned)
+    # plt.scatter(scanned[:, 0], scanned[:, 1], s=5, c='r')
+
+    # print(get_line([1,2],[8,0],3))
+
+    state = tangent_bug(start_point, goal_point, mymap)
+    plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
+    plt.scatter(start_point[0], start_point[1], c='r')
+    plt.scatter(goal_point[0], goal_point[1], c='g')
+    plt.savefig('../image/tangent_bug_poly_18.png')
+
+
 
