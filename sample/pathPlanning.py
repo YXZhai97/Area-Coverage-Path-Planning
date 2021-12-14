@@ -2,17 +2,18 @@
 from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
+
 """
 The main script for path planning 
 """
 
 # environment initialization
 # define the 2D map with length 100 width 100 and grid length 1
-mymap = EnvMap(50, 50, 1)
+mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
 # mymap.add_circle(100, 150, 30)
 # add a triangle
-# mymap.add_polygon([10,10,25,10,25,25,10,25])
+mymap.add_polygon([10,10,25,10,25,25,10,25])
 mymap.show_map()
 
 # robot initialization
@@ -78,11 +79,13 @@ for robot in robotList:
     plt.scatter(robot.target[:,0],robot.target[:,1])
 for obstacle in mymap.obstacles:
     plt.plot(obstacle[0], obstacle[1])
-
+plt.xlim(0, gv.x_bound)
+plt.ylim(0, gv.y_bound)
+plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target14.png')
+plt.savefig('../image/target15.png')
 plt.show()
 
 
@@ -94,10 +97,13 @@ def plot_robot_path(robotList, mymap):
         plt.plot(robot.state[:, 0], robot.state[:, 1])
     for obstacle in mymap.obstacles:
         plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2 )
+    plt.xlim(0, gv.x_bound)
+    plt.ylim(0, gv.y_bound)
+    plt.axis('equal')
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path14.png')
+    plt.savefig('../image/path15.png')
 
 
 plot_robot_path(robotList, mymap)
@@ -105,7 +111,7 @@ plot_robot_path(robotList, mymap)
 # 2D animation
 anim=visualize(robotList, mymap)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation14.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation15.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -118,7 +124,7 @@ show_infomap(robotList[0], mymap)
 # subfig4=figure4.add_subplot(224)
 # show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap14.png')
+plt.savefig('../image/infomap15.png')
 
 
 

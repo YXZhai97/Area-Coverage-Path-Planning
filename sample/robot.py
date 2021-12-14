@@ -482,6 +482,9 @@ class Robot:
         min_dis=get_closest_distance(cur_state, circle_scanned)
         if is_intersect and min_dis<self.r_tan:
             self.motion_mode=1
+            print("intersect_end_points:",intersect_end_points)
+            print("new_target:", new_target)
+            print("cur_state:", cur_state)
         else:
             # free space exploration
             self.motion_mode=0
@@ -503,7 +506,7 @@ class Robot:
         time_limit = 400  # end the simulation with time limit
         mode = 0  # mode=0 motion to goal, mode=1 boundary follow
         # get the intersection curve and endpoints
-        followed_curve = []
+        followed_curve = np.zeros(2)
         hit_point = []
         hit_time = 0
         boundary_follow_finished = False
@@ -518,10 +521,13 @@ class Robot:
                 cur_state = inner_states[inner_time]
 
             is_intersect, end_points, scanned_curve = get_curve(obstacles, cur_state, goal_point, rs)
-            followed_curve.append(scanned_curve)
+            uniqe_scanned_curve = list(map(list, set(map(tuple, scanned_curve))))
+            followed_curve = np.vstack((followed_curve, uniqe_scanned_curve))
+            followed_curve = list(map(list, set(map(tuple, followed_curve))))
+
             print("end points", end_points)
 
-            if not is_intersect:
+            if not is_intersect or mode==0:
                 print("not intersect")
                 temp_goal = goal_point
             else:
@@ -566,7 +572,7 @@ class Robot:
             else:
                 inner_time += 1
         tangent_start_time=time
-        tangent_dauration=inner_time+2
+        tangent_dauration=inner_time+1
         tangent_end_time=tangent_start_time+tangent_dauration
         self.tangent_end_time=tangent_end_time
         self.tangent_start_time=tangent_start_time
