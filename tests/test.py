@@ -44,10 +44,6 @@ import time
 # print(n)
 
 
-a=np.array([1,2,3])
-print(a*0.1)
-
-
 fig1=plt.figure('Figure 1 with subplots', figsize=(10,4))
 subfig1=fig1.add_subplot(121)
 subfig1.plot([1,2,3,4],[5,6,7,8])
@@ -267,4 +263,50 @@ for it in follow:
 
 
 
+def on_segment(p, q, r):
+    if r[0] <= max(p[0], q[0]) and r[0] >= min(p[0], q[0]) and r[1] <= max(p[1], q[1]) and r[1] >= min(p[1], q[1]):
+        return True
+    return False
 
+def orientation(p, q, r):
+    val = ((q[1] - p[1]) * (r[0] - q[0])) - ((q[0] - p[0]) * (r[1] - q[1]))
+    if val == 0:
+        return 0
+    return 1 if val > 0 else -1
+
+def intersects(seg1, seg2):
+    p1, q1 = seg1
+    p2, q2 = seg2
+
+    o1 = orientation(p1, q1, p2)
+    o2 = orientation(p1, q1, q2)
+    o3 = orientation(p2, q2, p1)
+    o4 = orientation(p2, q2, q1)
+    if o1 != o2 and o3 != o4:
+        return True
+    if o1 == 0 and on_segment(p1, q1, p2): return True
+    if o2 == 0 and on_segment(p1, q1, q2): return True
+    if o3 == 0 and on_segment(p2, q2, p1): return True
+    if o4 == 0 and on_segment(p2, q2, q1): return True
+
+    return False
+
+segment_one = ((25, 15), (25, 20))
+segment_two = ((26, 19), (28, 20))
+print(intersects(segment_one, segment_two))
+check=np.zeros((2,2))
+is_all_zero = np.all((check == 0))
+if is_all_zero:
+    print("yes")
+else:
+    print("no")
+
+a=1
+for i in range(4):
+    if i==1:
+        print(i)
+        a+=1
+    else:
+        print("else")
+    if a==2:
+        print(a)
