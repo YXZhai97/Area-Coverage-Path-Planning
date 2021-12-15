@@ -28,9 +28,9 @@ def tangent_bug(start_point, goal_point, my_map):
     y_n = my_map.y_n
     info_map = np.zeros((y_n, x_n))
     rs = 4
-    step_len = 1
+    step_len = 0.5
     time=0
-    time_limit=100 # end the simulation with time limit
+    time_limit=200 # end the simulation with time limit
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
     followed_curve=np.zeros(2)
@@ -318,7 +318,7 @@ def check_along(cur_state, previous_state, curve, goal_point, rs, temp_goal):
     min_dis=get_closest_distance(cur_state,curve)
     heuristic_previous=np.linalg.norm(previous_state-goal_point)
     heuristic_cur=np.linalg.norm(cur_state-goal_point)
-    if heuristic_cur>heuristic_previous or min_dis<0.5*rs:
+    if heuristic_cur>heuristic_previous or min_dis<0.2*rs:
         mode=1
     else:
         mode=0
@@ -428,7 +428,7 @@ if __name__=="__main__":
     mymap.show_map()
     # obs = mymap.obstacles
     start_point = [29, 9.9]
-    goal_point = [22.5, 14.5]
+    goal_point = [22.5, 10.5]
 
     # occu, scanned,continue_list,end_points = get_curve(obs, state, goal_point, 10)
     # # print(occu)
@@ -441,7 +441,7 @@ if __name__=="__main__":
     plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
     plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
-    plt.savefig('../image/tangent_bug_poly_18.png')
+    plt.savefig('../image/tangent_bug_poly_20.png')
 
 
 

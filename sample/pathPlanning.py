@@ -11,9 +11,10 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-# mymap.add_circle(100, 150, 30)
+mymap.add_circle(25, 25, 8)
 # add a triangle
-mymap.add_polygon([10,10,25,10,25,25,10,25])
+# mymap.add_polygon([10,10,25,10,25,25,10,25])
+
 mymap.show_map()
 
 # robot initialization
@@ -38,6 +39,7 @@ for time in range(gv.Iteration-1):
         robot.update_info_map(time, mymap)
         # if robot.motionmode==0:
         #     robot.update_target(time)
+        robot.update_target(time)
         cur_target = robot.target[time]
         robot.update_motion_mode(time, mymap, cur_target)
         # get motion mode
@@ -56,7 +58,6 @@ for time in range(gv.Iteration-1):
 
         else:
             robot.reset_tangent()
-            robot.update_target(time)
             robot.update_state(time)
 
 
@@ -85,7 +86,7 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target15.png')
+plt.savefig('../image/target18.png')
 plt.show()
 
 
@@ -103,7 +104,7 @@ def plot_robot_path(robotList, mymap):
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path15.png')
+    plt.savefig('../image/path18.png')
 
 
 plot_robot_path(robotList, mymap)
@@ -111,7 +112,7 @@ plot_robot_path(robotList, mymap)
 # 2D animation
 anim=visualize(robotList, mymap)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation15.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation18.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -124,7 +125,7 @@ show_infomap(robotList[0], mymap)
 # subfig4=figure4.add_subplot(224)
 # show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap15.png')
+plt.savefig('../image/infomap18.png')
 
 
 

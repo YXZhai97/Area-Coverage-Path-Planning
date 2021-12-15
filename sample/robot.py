@@ -38,7 +38,7 @@ class Robot:
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.step_len=1
+        self.step_len=0.5
         self.tangent_end_time=0
         self.tangent_start_time=0
         self.inside_tangent_planner=False
