@@ -310,3 +310,12 @@ for i in range(4):
         print("else")
     if a==2:
         print(a)
+a=1
+b=a
+print(a)
+print(b)
+b=-1
+print(a)
+print(b)
+print(id(a))
+print(id(b))
