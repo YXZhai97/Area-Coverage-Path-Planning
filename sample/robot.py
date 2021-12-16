@@ -5,7 +5,6 @@ The method of the alpha agent is defined
 
 """
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -43,8 +42,6 @@ class Robot:
         self.tangent_start_time=0
         self.inside_tangent_planner=False
         self.tangent_targets=[]
-
-
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
