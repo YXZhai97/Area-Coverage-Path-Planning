@@ -16,5 +16,11 @@
 8. or in outlook try out new things and think about the application in agricultures 
 
 
+todo 16.12.2021
+after circum navigation, from the last target point doing flood-fill 
+then update target 
+
+
+
 
 
