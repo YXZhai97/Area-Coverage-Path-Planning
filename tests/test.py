@@ -319,3 +319,10 @@ print(a)
 print(b)
 print(id(a))
 print(id(b))
+a=0.5
+print(int(a//1))
+
+followed=[[1,2],[3,4],[0,8],[0,0]]
+followed.remove([0,0])
+print(followed)
+print(max([sub[1] for sub in followed]))

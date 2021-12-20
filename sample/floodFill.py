@@ -2,27 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
-def floodFill(image, sr, sc, newColor):
+def flood_fill(robot,sr, sc, newColor):
+
+    image = robot.tarobsmap
     m, n = len(image), len(image[0])
     grid=copy.copy(image)
-    print("id grid",id(grid))
-    print("id image",id(image))
-
     cur_color=image[sr,sc]
     if cur_color==newColor:
         print("can not perform flood-fill")
         return image
+
     def bfs(i, j):
         nonlocal grid
-        grid[i,j] =newColor
+        grid[i,j] = newColor
         for (a, b) in [[1, 0], [0, 1], [-1, 0], [0, -1]]:
-            if 0 <= i + a < m and 0<=j + b < n and grid[i + a, j + b] !=-1 :
+            if 0 <= i + a < m and 0 <= j + b < n and grid[i + a, j + b] != -1:
                 bfs(i + a, j + b)
-
     bfs(sr,sc)
 
-    print("id grid", id(grid))
-    print("id image", id(image))
     return grid
 
 
@@ -63,7 +60,7 @@ if __name__=="__main__":
 
     ])
 
-    filled_image = floodFill(image, 2, 4, -1)
+    filled_image = flood_fill(image, 3, 5, -1)
     figure= plt.figure('flood fill ', figsize=(10, 10))
     plt.title("flood fill algorithm")
     subfig1 = figure.add_subplot(121)

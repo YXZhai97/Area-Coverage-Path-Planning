@@ -99,7 +99,7 @@ def tangent_bug(start_point, goal_point, my_map):
             break
         else:
             time+=1
-    return state
+    return state, followed_curve
 
 
 def get_curve(obstacles, cur_state, goal_point, rs):
@@ -391,7 +391,7 @@ def test_tangentbug():
 
     # print(get_line([1,2],[8,0],3))
 
-    state = tangent_bug(start_point, goal_point, mymap)
+    state, followed_curve= tangent_bug(start_point, goal_point, mymap)
     plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
     plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
@@ -437,7 +437,12 @@ if __name__=="__main__":
 
     # print(get_line([1,2],[8,0],3))
 
-    state = tangent_bug(start_point, goal_point, mymap)
+    state, followed_curve = tangent_bug(start_point, goal_point, mymap)
+    min_x=min([sub[0] for sub in followed_curve])
+    max_x=max([sub[0] for sub in followed_curve])
+    min_y=min([sub[1] for sub in followed_curve])
+    max_y=max([sub[1] for sub in followed_curve])
+    print(min_x,min_y, max_x, max_y)
     plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
     plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
