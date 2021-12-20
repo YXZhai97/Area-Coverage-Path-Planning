@@ -42,6 +42,7 @@ class Robot:
         self.tangent_start_time=0
         self.inside_tangent_planner=False
         self.tangent_targets=[]
+        self.boundary_follow_finished=False
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
@@ -504,6 +505,7 @@ class Robot:
         mode = 0  # mode=0 motion to goal, mode=1 boundary follow
         # get the intersection curve and endpoints
         followed_curve = np.zeros(2)
+        hit_times=0
         hit_point = []
         hit_time = 0
         boundary_follow_finished = False
@@ -534,12 +536,14 @@ class Robot:
             if mode == 0:  # go straight to goal
                 new_state = go_straight(cur_state, temp_goal, step_len)
                 mode = check_along(new_state, cur_state, scanned_curve, goal_point, rs, temp_goal)
-                if mode:
-                    print("end motion to goal, start boundary following")
-                    hit_point = new_state  # store the boundary following point
-                    print("hit point", hit_point)
-                    hit_time = inner_time
-                    print("hit time", hit_time)
+                if mode :
+                    if hit_times==0:
+                        print("end motion to goal, start boundary following")
+                        hit_point = new_state  # store the boundary following point
+                        print("hit point", hit_point)
+                        hit_time = inner_time
+                        print("hit time", hit_time)
+                        hit_times+=1
                     dy = temp_goal[1] - new_state[1]
                     dx = temp_goal[0] - new_state[0]
                     previous_angle = atan2(dy, dx)
@@ -554,7 +558,7 @@ class Robot:
             inner_states = np.vstack((inner_states, new_state))
             print("time step:", inner_time)
 
-            if mode == 1 and np.linalg.norm(new_state - hit_point) < rs and inner_time - hit_time > 20:
+            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.5*rs and inner_time - hit_time > 20:
                 boundary_follow_finished = True
 
             if (new_state == goal_point).all():
@@ -575,7 +579,8 @@ class Robot:
         self.tangent_start_time=tangent_start_time
         self.tangent_targets=inner_states
         self.inside_tangent_planner=True
-        return inner_states
+        self.boundary_follow_finished=True
+        return inner_states, boundary_follow_finished, followed_curve
 
 
     # check if target inside obstacle
@@ -621,6 +626,8 @@ class Robot:
         self.tangent_start_time = 0
         self.inside_tangent_planner = False
         self.tangent_targets = []
+        self.boundary_follow_finished=False
+
 
 
 
@@ -780,7 +787,17 @@ class Robot:
         # integrate the tangent_bug here
         pass
 
+def get_middle_point(followed_curve):
 
+    min_x = min([sub[0] for sub in followed_curve])
+    max_x = max([sub[0] for sub in followed_curve])
+    min_y = min([sub[1] for sub in followed_curve])
+    max_y = max([sub[1] for sub in followed_curve])
+    middle_x=(min_x+max_x)/2
+    middle_y=(min_y+max_y)/2
+    sr = int(middle_x // gv.grid_length)
+    sc = int(middle_y // gv.grid_length)
+    return sr, sc
 
 def define_robot(number):
     """
