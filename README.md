@@ -12,5 +12,5 @@ This repo contains the implementation of my master thesis.
 <div align=center><img src="image/path.png" width=200 /></div>
 <div align=center><img src="image/path7.png" width=200 /></div>
 <div align=center><img src="image/path2.png" width=200 /></div>
-
+<div align=center><img src="image/path20.png" width=200 /></div>
 ## Animations
