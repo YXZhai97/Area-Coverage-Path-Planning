@@ -2,7 +2,7 @@
 from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
-
+from floodFill import flood_fill
 """
 The main script for path planning 
 """
@@ -15,7 +15,7 @@ mymap.add_circle(25, 25, 8)
 # add a triangle
 # mymap.add_polygon([10,10,25,10,25,25,10,25])
 
-mymap.show_map()
+# mymap.show_map()
 
 # robot initialization
 # define three robot and initialize the state and target
@@ -46,16 +46,24 @@ for time in range(gv.Iteration-1):
         motion_mode=robot.motion_mode
         # update the target based on the motion-mode
         if motion_mode==1 and not robot.inside_tangent_planner :
+            target_t=robot.target[time]
             print("start boundary follow")
             print("motion-mode:", motion_mode)
-            targets=robot.tangent_bug_planner(time, mymap)
+            targets, boundary_follow_finished, followed_curve=robot.tangent_bug_planner(time, mymap)
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
 
-        elif robot.inside_tangent_planner and time<robot.tangent_end_time:
+        elif robot.inside_tangent_planner and time<robot.tangent_end_time-1:
             cur_target=robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
-
+        elif robot.boundary_follow_finished and time==robot.tangent_end_time-1:
+            cur_target = robot.get_target_from_tangent(time)
+            robot.update_state_tangent(time, cur_target)
+            followed_curve.remove([0,0])
+            sr, sc = get_middle_point(followed_curve)
+            print("sr,sc:", sr, sc)
+            obstacle_color = -1
+            robot.tarobsmap = flood_fill(robot, sr, sc, obstacle_color)
         else:
             robot.reset_tangent()
             robot.update_state(time)
@@ -86,7 +94,7 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target18.png')
+plt.savefig('../image/target21.png')
 plt.show()
 
 
@@ -104,7 +112,7 @@ def plot_robot_path(robotList, mymap):
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path18.png')
+    plt.savefig('../image/path21.png')
 
 
 plot_robot_path(robotList, mymap)
@@ -112,7 +120,7 @@ plot_robot_path(robotList, mymap)
 # 2D animation
 anim=visualize(robotList, mymap)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation18.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation21.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -125,7 +133,7 @@ show_infomap(robotList[0], mymap)
 # subfig4=figure4.add_subplot(224)
 # show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap18.png')
+plt.savefig('../image/infomap21.png')
 
 
 
