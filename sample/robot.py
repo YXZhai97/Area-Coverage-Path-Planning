@@ -260,8 +260,8 @@ class Robot:
 
         # limit gamma attraction
         norm_u_gamma = np.linalg.norm(u_gamma)
-        if norm_u_gamma > 150:
-            u_gamma = 150 * u_gamma / norm_u_gamma
+        if norm_u_gamma > 100:
+            u_gamma = 100 * u_gamma / norm_u_gamma
 
         # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
