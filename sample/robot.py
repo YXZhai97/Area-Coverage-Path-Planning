@@ -37,12 +37,13 @@ class Robot:
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.step_len=0.5
+        self.step_len=0.2
         self.tangent_end_time=0
         self.tangent_start_time=0
         self.inside_tangent_planner=False
         self.tangent_targets=[]
         self.boundary_follow_finished=False
+        self.followed_curve=[]
 
         # initial_state=[x,y,v_x,v_y]
         self.initial_state = np.zeros(2 * self.dimension)
@@ -558,8 +559,9 @@ class Robot:
             inner_states = np.vstack((inner_states, new_state))
             print("time step:", inner_time)
 
-            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.5*rs and inner_time - hit_time > 20:
+            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.4*rs and inner_time - hit_time > 10:
                 boundary_follow_finished = True
+                self.boundary_follow_finished = True
 
             if (new_state == goal_point).all():
                 print("Goal reached")
@@ -579,7 +581,8 @@ class Robot:
         self.tangent_start_time=tangent_start_time
         self.tangent_targets=inner_states
         self.inside_tangent_planner=True
-        self.boundary_follow_finished=True
+        self.followed_curve=followed_curve
+
         return inner_states, boundary_follow_finished, followed_curve
 
 
@@ -936,6 +939,7 @@ def merge_infomap(robotList):
     Returns:
         merge the info maps and return a percent in [0,1]
     '''
+    # todo consider tarobsmap
     merged_map = np.zeros((gv.y_n, gv.x_n))
     for robot in robotList:
         # logic_or two matrix and convert it into number 0 and 1

@@ -9,7 +9,7 @@ import numpy as np
 import global_value as gv
 
 
-def visualize(robot_list, mymap):
+def visualize(robot_list, mymap,num_time):
 
 
     fig = plt.figure()
@@ -38,7 +38,7 @@ def visualize(robot_list, mymap):
 
     anim=animation.FuncAnimation(fig,
                                  animate,
-                                 frames=gv.Iteration,
+                                 frames=num_time,
                                  init_func=init,
                                  blit=True,
                                  interval=80)
