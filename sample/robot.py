@@ -159,6 +159,14 @@ class Robot:
         # 0 row of target matrix is the random initial target
         self.target[0] = self.initial_target
 
+    def set_init_state_target(self):
+        """
+        set the initial state and target
+        Returns:
+
+        """
+        pass
+
     def update_state(self, time):
         # get the current state
         cur_position = self.state[time, :2]
@@ -167,7 +175,12 @@ class Robot:
         # calculate the deviation
         d_v = self.control_input(time) * gv.step_size*gv.rate
         d_position = self.state[time, 2:] * gv.step_size*gv.rate
+        norm_d_position = np.linalg.norm(d_position)
+        if norm_d_position>0.5:
+            d_position=0.5*d_position/norm_d_position
 
+        print("dv:", d_v)
+        print("d_position:", d_position)
         # add new state vector
         self.state[time + 1, :2] = cur_position + d_position
         self.state[time + 1, 2:] = cur_v + d_v
@@ -219,17 +232,16 @@ class Robot:
             u_alpha_j_2 = gv.c2_alpha * a_ij * (v_j - v_i)
             u_alpha += u_alpha_j_1 + u_alpha_j_2
 
-        print(u_alpha)
         # reset the alpha force to zero when robot out of boundary
         if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
             u_alpha=0
 
         # limit the alpha force
         norm_u_alpha = np.linalg.norm(u_alpha)
-        if norm_u_alpha > 100:
-            u_alpha = 100 * u_alpha / norm_u_alpha
-        print(norm_u_alpha)
-        print(u_alpha)
+        if norm_u_alpha > 50:
+            u_alpha = 50 * u_alpha / norm_u_alpha
+
+        print("u_alpha:", u_alpha)
 
         # calculate the influence of beta_agent
         # first get the neighbour
@@ -261,16 +273,16 @@ class Robot:
 
         # limit gamma attraction
         norm_u_gamma = np.linalg.norm(u_gamma)
-        if norm_u_gamma > 100:
-            u_gamma = 100 * u_gamma / norm_u_gamma
-
+        if norm_u_gamma > 50:
+            u_gamma = 50 * u_gamma / norm_u_gamma
+        print("u_gamma:", u_gamma)
         # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
         # print(u)
         # limit the acceleration
         norm_u = np.linalg.norm(u)
-        if norm_u > 100:
-            u = 100 * u / norm_u
+        if norm_u > 40:
+            u = 40 * u / norm_u
 
         # print(u)
         # print(norm_u)

@@ -11,10 +11,10 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-mymap.add_circle(15, 15, 6)
+# mymap.add_circle(15, 15, 6)
 # add a triangle
 # mymap.add_polygon([10,10,25,10,25,25,10,25])
-mymap.add_polygon([28,28,38,28,38,38,28,38])
+# mymap.add_polygon([28,28,38,28,38,38,28,38])
 # mymap.show_map()
 
 # robot initialization
@@ -78,7 +78,7 @@ for time in range(gv.Iteration-1):
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent>=0.90:
+    if coverage_percent>=0.9:
         print("Area Covered successfully with 90%")
         break
 
@@ -100,7 +100,7 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target25.png')
+plt.savefig('../image/target26.png')
 plt.show()
 
 
@@ -118,7 +118,7 @@ def plot_robot_path(robotList, mymap):
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path25.png')
+    plt.savefig('../image/path26.png')
 
 plot_robot_path(robotList, mymap)
 
@@ -126,7 +126,7 @@ plot_robot_path(robotList, mymap)
 # 2D animation
 anim=visualize(robotList, mymap,time)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation25.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation26.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -139,7 +139,7 @@ show_infomap(robotList[0], mymap)
 # subfig4=figure4.add_subplot(224)
 # show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap25.png')
+plt.savefig('../image/infomap26.png')
 
 
 
