@@ -32,6 +32,8 @@ class Robot:
         self.motion_mode=0
         # d_tan is the activation distance for tangent bug
         self.d_tan=self.rs/4
+        # d_position_limit, the limit for updating the state of each step
+        self.d_position_limit=2
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
@@ -176,8 +178,8 @@ class Robot:
         d_v = self.control_input(time) * gv.step_size*gv.rate
         d_position = self.state[time, 2:] * gv.step_size*gv.rate
         norm_d_position = np.linalg.norm(d_position)
-        if norm_d_position>0.5:
-            d_position=0.5*d_position/norm_d_position
+        if norm_d_position>self.d_position_limit:
+            d_position=self.d_position_limit*d_position/norm_d_position
 
         print("dv:", d_v)
         print("d_position:", d_position)

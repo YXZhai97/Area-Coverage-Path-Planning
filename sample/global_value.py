@@ -36,8 +36,8 @@ k1=0.04
 k2=0.01
 rohgamma=0.2
 # simulation parameters
-robot_number=3
-T=90 # total simulation time
+robot_number=2
+T=80 # total simulation time
 step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number
 rate=1
