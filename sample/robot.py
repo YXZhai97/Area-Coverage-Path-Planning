@@ -13,7 +13,7 @@ import env_map as env
 import methods as m
 import collections
 from tangentbug import *
-
+from numba import jit
 
 class Robot:
     number_of_robot = 0
@@ -70,6 +70,7 @@ class Robot:
     @classmethod
     def add_agent(cls):
         cls.number_of_robot += 1
+
 
     def random_init_state(self, mymap):
         """
@@ -169,6 +170,7 @@ class Robot:
         """
         pass
 
+
     def update_state(self, time):
         # get the current state
         cur_position = self.state[time, :2]
@@ -204,6 +206,7 @@ class Robot:
             if i != j and np.linalg.norm(q_j - q_i) < self.rc:
                 self.neighbour.append(r)
         return self.neighbour
+
 
     def control_input(self, time):
         beta_neighbour=self.get_beta(time)
@@ -291,6 +294,7 @@ class Robot:
 
         return u
 
+
     def benefit_value(self, time):
         lamda_matrix = np.zeros((gv.y_n, gv.x_n))
         for i in range(gv.x_n):
@@ -313,6 +317,7 @@ class Robot:
 
     # get the maximum value in benefit_matrix
     # todo review code
+
     def update_target(self, time):
         '''
         Args:
@@ -422,6 +427,7 @@ class Robot:
         self.target[time + 1] = new_target
         return new_target
 
+
     def update_info_map(self, time, mymap):
 
         '''
@@ -476,6 +482,7 @@ class Robot:
 
         update_percent(self.infomap,time)
 
+
     def update_motion_mode(self, time, mymap, new_target):
         """
         Args:
@@ -503,6 +510,7 @@ class Robot:
             self.motion_mode=0
 
         return self.motion_mode
+
 
     def tangent_bug_planner(self, time, mymap):
         start_point=self.state[time, :2]
@@ -620,6 +628,10 @@ class Robot:
         norm_u_gamma = np.linalg.norm(u_gamma)
         if norm_u_gamma > 150:
             u_gamma = 150 * u_gamma / norm_u_gamma
+
+        # check the motion mode and neighbour agent mode
+        # calculate the repulsive force from neighbour agents :u_alpha
+        # todo
 
         # calculate the deviation
         d_v = u_gamma * gv.step_size
@@ -804,6 +816,7 @@ class Robot:
         # integrate the tangent_bug here
         pass
 
+
 def get_middle_point(followed_curve):
 
     min_x = min([sub[0] for sub in followed_curve])
@@ -831,6 +844,7 @@ def define_robot(number):
 
 
 # show the robot initial state and target in plot
+
 def show_robot(robotList, mymap):
     figure0 = plt.figure('robot initial state ', figsize=(5, 5))
     for robot in robotList:
@@ -856,6 +870,7 @@ def show_robot(robotList, mymap):
     # plt.savefig('../image/initial_state.png')
     plt.show()
     plt.savefig('../image/initial_state.png')
+
 
 def show_infomap(robot, mymap):
     '''
@@ -945,6 +960,7 @@ def show_merge_infomap(robotList):
 
     # show image
     plt.imshow(data_3d, origin='lower')
+
 
 def merge_infomap(robotList):
     '''

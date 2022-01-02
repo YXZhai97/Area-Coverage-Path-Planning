@@ -3,6 +3,7 @@ from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
 from floodFill import flood_fill
+from numba import jit
 """
 The main script for path planning 
 """
@@ -11,10 +12,10 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-# mymap.add_circle(15, 15, 6)
+mymap.add_circle(15, 15, 6)
 # add a triangle
-mymap.add_polygon([10,10,25,10,25,25,10,25])
-# mymap.add_polygon([28,28,38,28,38,38,28,38])
+# mymap.add_polygon([10,10,25,10,25,25,10,25])
+mymap.add_polygon([28,28,38,28,38,38,28,38])
 # mymap.show_map()
 
 # robot initialization
@@ -31,6 +32,7 @@ show_robot(robotList, mymap)
 # monitor the coverage percent
 c_percent=np.zeros(gv.Iteration-1)
 # todo there is index problem with time+1
+
 for time in range(gv.Iteration-1):
     for robot in robotList:
         # get current robot state

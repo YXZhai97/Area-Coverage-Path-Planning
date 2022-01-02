@@ -3,6 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import robot
+
 """
 define all the methods needed in one class
 """
@@ -94,6 +95,7 @@ def bump_beta(z):
         r = 0
     return r
 
+
 def phi_alpha(z):
     '''
 
@@ -130,6 +132,7 @@ def sigma_1(z):
 
     y=z/math.sqrt(1+(np.linalg.norm(z)**2))
     return y
+
 
 def norm_direction(q_i,q_j):
     '''
