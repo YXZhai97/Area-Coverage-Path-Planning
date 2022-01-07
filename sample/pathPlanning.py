@@ -3,7 +3,7 @@ from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
 from floodFill import flood_fill
-from numba import jit
+
 """
 The main script for path planning 
 """
@@ -57,10 +57,21 @@ for time in range(gv.Iteration-1):
 
         elif robot.inside_tangent_planner and time<robot.tangent_end_time-1:
             cur_target=robot.get_target_from_tangent(time)
-            robot.update_state_tangent(time, cur_target)
+            if robot.check_bug_neighbour(time):
+                robot.avoid_robot(time)
+                robot.reset_tangent()
+                print("robot meet and stop boundary following")
+            else:
+                robot.update_state_tangent(time, cur_target)
         elif not robot.boundary_follow_finished and time==robot.tangent_end_time-1:
             cur_target = robot.get_target_from_tangent(time)
-            robot.update_state_tangent(time, cur_target)
+            if robot.check_bug_neighbour(time):
+                robot.avoid_robot(time)
+                robot.reset_tangent()
+                print("robot meet and stop boundary following")
+            else:
+                robot.update_state_tangent(time, cur_target)
+
         elif robot.boundary_follow_finished and time==robot.tangent_end_time-1:
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
@@ -102,7 +113,7 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target27.png')
+plt.savefig('../image/target28.png')
 plt.show()
 
 
@@ -120,7 +131,7 @@ def plot_robot_path(robotList, mymap):
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path27.png')
+    plt.savefig('../image/path28.png')
 
 plot_robot_path(robotList, mymap)
 
@@ -128,7 +139,7 @@ plot_robot_path(robotList, mymap)
 # 2D animation
 anim=visualize(robotList, mymap,time)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation27.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation28.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -141,7 +152,7 @@ show_infomap(robotList[0], mymap)
 # subfig4=figure4.add_subplot(224)
 # show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap27.png')
+plt.savefig('../image/infomap28.png')
 
 
 

@@ -13,7 +13,7 @@ import env_map as env
 import methods as m
 import collections
 from tangentbug import *
-from numba import jit
+
 
 class Robot:
     number_of_robot = 0
@@ -581,7 +581,7 @@ class Robot:
             inner_states = np.vstack((inner_states, new_state))
             print("time step:", inner_time)
 
-            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.4*rs and inner_time - hit_time > 10:
+            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.3*rs and inner_time - hit_time > 10:
                 boundary_follow_finished = True
                 self.boundary_follow_finished = True
 
@@ -609,11 +609,11 @@ class Robot:
 
 
     # check if target inside obstacle
-    def check_inside_obstacle(self, cur_target, mymap):
-        x=cur_target[0]
-        y=cur_target[1]
-        row=y
-        pass
+    # def check_inside_obstacle(self, cur_target, mymap):
+    #     x=cur_target[0]
+    #     y=cur_target[1]
+    #     row=y
+    #     pass
 
 
 
@@ -658,6 +658,96 @@ class Robot:
         self.boundary_follow_finished=False
 
 
+    def check_bug_neighbour(self, time):
+        q_i=self.state[time,:2]
+        meet_distance=self.rc/3
+        for r in self.neighbour:
+            q_j=r.state[time,:2]
+            distance=np.linalg.norm(q_i-q_j)
+            if r.motion_mode and distance<meet_distance:
+                return True
+            else:
+                return False
+
+    def avoid_robot(self, time):
+        """
+        Check the neighbour alpha agent
+        detect the closest beta obstacle
+        compare the boundary following time
+        the smaller one receive repulsive force
+        the smaller one update the state
+        the motion mode is reset to 0
+
+        Args:
+            time: the simulation time
+
+        Returns:
+
+        """
+        alph_neighbour=self.neighbour
+        travel_time_self = time - self.tangent_start_time
+        for r in alph_neighbour:
+            travel_time_neighbour = time - r.tangent_start_time
+            t_d=travel_time_self-travel_time_neighbour
+            if r.motion_mode and t_d<0:
+                self.motion_mode=0
+                self.repulsive_force(time)
+                break
+
+    def repulsive_force(self, time):
+        u_alpha=np.zeros(2)
+        u_beta=np.zeros(2)
+
+        neighbour = self.neighbour
+        A = m.adjacency_alpha(gv.robotList)
+        i = self.id
+        # position of the robot i at time t
+        q_i = self.state[time, :2]
+        # velocity of robot i
+        v_i = self.state[time, 2:]
+
+        for robot_j in neighbour:
+            j = robot_j.id
+            a_ij = A[i, j]
+            # position and velocity of robot j
+            q_j = np.array(robot_j.state)[time, :2]
+            v_j = np.array(robot_j.state)[time, 2:]
+            u_alpha_j_1 = gv.c1_alpha * m.phi_alpha(m.sigma_norm(q_j - q_i)) * m.norm_direction(q_i, q_j)
+            u_alpha_j_2 = gv.c2_alpha * a_ij * (v_j - v_i)
+            u_alpha += u_alpha_j_1 + u_alpha_j_2
+
+        q_beta=self.get_beta_agent(time)
+        print("q_beta:", q_beta)
+        u_beta= gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
+        u=u_alpha+u_beta
+        print("u repulsive:", u)
+
+        norm_u = np.linalg.norm(u)
+        if norm_u > 100:
+            u = 100 * u/ norm_u
+
+        cur_position = self.state[time, :2]
+        cur_v = self.state[time, 2:]
+
+        # calculate the deviation
+        d_v = u * gv.step_size * gv.rate
+        d_position = self.state[time, 2:] * gv.step_size * gv.rate
+        norm_d_position = np.linalg.norm(d_position)
+        if norm_d_position > self.d_position_limit:
+            d_position = self.d_position_limit * d_position / norm_d_position
+
+        self.state[time + 1, :2] = cur_position + d_position
+        self.state[time + 1, 2:] = cur_v + d_v
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -683,37 +773,30 @@ class Robot:
         pass
 
 
-    # def get_beta_agent(self, time):
-    #     # robot current sate
-    #     q = np.array(self.state)[time, :2]
-    #
-    #     # find the closest point on obstacle
-    #     close_distance = self.rs
-    #     for x in range(gv.x_n):
-    #         for y in range(gv.y_n):
-    #             if self.tarobsmap[x, y] == -1:
-    #                 x_center = gv.grid_length / 2 + x * gv.grid_length
-    #                 y_center = gv.grid_length / 2 + y * gv.grid_length
-    #                 cell_center = np.array([x_center, y_center])
-    #                 distance = np.linalg.norm(q - cell_center)
-    #                 # update the closest point
-    #                 # set the closest point as beta neighbour
-    #                 # how to tell the point on different obstacle
-    #                 # todo
-    #                 if distance < close_distance:
-    #                     close_distance = distance
-    #                     beta_index = [x, y]
-    #
-    #     # get the position of the beta agent
-    #     beta_x = gv.grid_length / 2 + beta_index[0] * gv.grid_length
-    #     beta_y = gv.grid_length / 2 + beta_index[1] * gv.grid_length
-    #
-    #     # get the velocity projection of the beta agent
-    #     beta_vx = 0
-    #     beta_vy = 0
-    #     beta_state = [beta_x, beta_y, beta_vx, beta_vy]
-    #     # add the beta_state to beta_neighbour list
-    #     self.beta_neighbour.append(beta_state)
+    def get_beta_agent(self, time):
+        # robot current sate
+        q = self.state[time, :2]
+
+        # find the closest point on obstacle
+        close_distance = 100
+        close_point=[]
+        for x in range(gv.x_n):
+            for y in range(gv.y_n):
+                if self.tarobsmap[x, y] == -1:
+                    x_center = gv.grid_length / 2 + x * gv.grid_length
+                    y_center = gv.grid_length / 2 + y * gv.grid_length
+                    cell_center = np.array([x_center, y_center])
+                    distance = np.linalg.norm(q - cell_center)
+                    # update the closest point
+                    # set the closest point as beta neighbour
+                    if distance < close_distance:
+                        close_distance = distance
+                        close_point = [x_center, y_center]
+
+        beta_state = np.array(close_point)
+
+        return beta_state
+
 
     # get the nearest beta point on k obstacle around the robot
     def get_beta(self, time):
