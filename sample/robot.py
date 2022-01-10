@@ -89,8 +89,8 @@ class Robot:
             bounding_boxes.append([x_min, x_max, y_min, y_max])
 
         # Define initial velocity v_x, v_y
-        self.initial_state[2] = np.random.uniform(0, 1) * gv.v_bound
-        self.initial_state[3] = np.random.uniform(0, 1) * gv.v_bound
+        self.initial_state[2] = np.random.uniform(0.1, 0.9) * gv.v_bound
+        self.initial_state[3] = np.random.uniform(0.1, 0.9) * gv.v_bound
         # i is the current robot index
         i = self.id
         flag_obs=0
@@ -179,13 +179,14 @@ class Robot:
         # calculate the deviation
         d_v = self.control_input(time) * gv.step_size*gv.rate
         d_position = self.state[time, 2:] * gv.step_size*gv.rate
+
+        # limit the position change at each time step
         norm_d_position = np.linalg.norm(d_position)
         if norm_d_position>self.d_position_limit:
             d_position=self.d_position_limit*d_position/norm_d_position
 
-        print("dv:", d_v)
-        print("d_position:", d_position)
-        # add new state vector
+
+        # update the robot state for the next time step
         self.state[time + 1, :2] = cur_position + d_position
         self.state[time + 1, 2:] = cur_v + d_v
 
@@ -246,7 +247,7 @@ class Robot:
         if norm_u_alpha > 50:
             u_alpha = 50 * u_alpha / norm_u_alpha
 
-        print("u_alpha:", u_alpha)
+        # print("u_alpha:", u_alpha)
 
         # calculate the influence of beta_agent
         # first get the neighbour
@@ -280,7 +281,7 @@ class Robot:
         norm_u_gamma = np.linalg.norm(u_gamma)
         if norm_u_gamma > 50:
             u_gamma = 50 * u_gamma / norm_u_gamma
-        print("u_gamma:", u_gamma)
+        # print("u_gamma:", u_gamma)
         # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
         # print(u)
@@ -296,6 +297,8 @@ class Robot:
 
 
     def benefit_value(self, time):
+
+
         lamda_matrix = np.zeros((gv.y_n, gv.x_n))
         for i in range(gv.x_n):
             for j in range(gv.y_n):
@@ -502,9 +505,10 @@ class Robot:
         min_dis=get_closest_distance(cur_state, circle_scanned)
         if is_intersect and min_dis<self.r_tan:
             self.motion_mode=1
-            print("intersect_end_points:",intersect_end_points)
-            print("new_target:", new_target)
-            print("cur_state:", cur_state)
+            # print log info
+            # print("intersect_end_points:",intersect_end_points)
+            # print("new_target:", new_target)
+            # print("cur_state:", cur_state)
         else:
             # free space exploration
             self.motion_mode=0
@@ -547,10 +551,10 @@ class Robot:
             followed_curve = np.vstack((followed_curve, uniqe_scanned_curve))
             followed_curve = list(map(list, set(map(tuple, followed_curve))))
 
-            print("end points", end_points)
+            # print("end points", end_points)
 
             if not is_intersect or mode==0:
-                print("not intersect")
+                # print("not intersect")
                 temp_goal = goal_point
             else:
                 temp_goal = get_heuristic_goal(cur_state, goal_point, end_points)
@@ -577,6 +581,7 @@ class Robot:
 
                 if mode == 0:
                     print("end boundary following, start motion to goal ")
+
 
             inner_states = np.vstack((inner_states, new_state))
             print("time step:", inner_time)
@@ -656,18 +661,22 @@ class Robot:
         self.inside_tangent_planner = False
         self.tangent_targets = []
         self.boundary_follow_finished=False
+        self.motion_mode=0
 
 
     def check_bug_neighbour(self, time):
         q_i=self.state[time,:2]
         meet_distance=self.rc/3
+        flag=0
         for r in self.neighbour:
             q_j=r.state[time,:2]
             distance=np.linalg.norm(q_i-q_j)
             if r.motion_mode and distance<meet_distance:
+                flag=1
                 return True
-            else:
-                return False
+        if not flag:
+            return False
+
 
     def avoid_robot(self, time):
         """
@@ -694,6 +703,8 @@ class Robot:
                 self.repulsive_force(time)
                 break
 
+
+
     def repulsive_force(self, time):
         u_alpha=np.zeros(2)
         u_beta=np.zeros(2)
@@ -718,13 +729,20 @@ class Robot:
 
         q_beta=self.get_beta_agent(time)
         print("q_beta:", q_beta)
-        u_beta= gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
+        # the velocity of beta agent is [0,0]
+        # the position of beta agent is q_beta, from self.get_beta_agent(time)
+        v_beta=np.zeros(2)
+        b_ik=m.bump_beta(m.sigma_norm(q_beta-q_i)/m.sigma_norm(gv.d_beta))
+        u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
+        #         # u_beta_k_2 = np.multiply((v_beta - v_i),gv.c2_beta * b_ik )
+        u_beta_k_2 = (gv.c2_beta * b_ik) * (v_beta - v_i)
+        u_beta = u_beta_k_1 + u_beta_k_2
         u=u_alpha+u_beta
         print("u repulsive:", u)
 
         norm_u = np.linalg.norm(u)
-        if norm_u > 100:
-            u = 100 * u/ norm_u
+        if norm_u > 20:
+            u = 20 * u/ norm_u
 
         cur_position = self.state[time, :2]
         cur_v = self.state[time, 2:]
@@ -739,8 +757,32 @@ class Robot:
         self.state[time + 1, :2] = cur_position + d_position
         self.state[time + 1, 2:] = cur_v + d_v
 
+    def reset_target(self, time):
 
+        # get the benefit value matrix
+        # b_matrix=self.benefit_matrix
+        # row=len(b_matrix)
+        # col =len(b_matrix[0])
+        # min_b_value=100
+        #
+        # # get the smallest value from the matrix
+        # for x in range(col):
+        #     for y in range(row):
+        #         if 0<b_matrix[y,x]<min_b_value:
+        #             min_b_value=b_matrix[y,x]
+        #             target=[x,y]
+        # target_x=gv.grid_length*target[0]+gv.grid_length/2
+        # target_y=gv.grid_length*target[1]+gv.grid_length/2
+        # self.target[time+1]=[target_x, target_y]
 
+        # reset target along the negative direction of the current velocity
+        cur_v=self.state[time,2:]
+        cur_state=self.state[time,:2]
+        negative_v=-cur_v/np.linalg.norm(cur_v)
+        step_len=8
+        temp_target=step_len*negative_v+cur_state
+
+        self.target[time]=temp_target
 
 
 
@@ -908,8 +950,8 @@ def get_middle_point(followed_curve):
     max_y = max([sub[1] for sub in followed_curve])
     middle_x=(min_x+max_x)/2
     middle_y=(min_y+max_y)/2
-    sr = int(middle_x // gv.grid_length)
-    sc = int(middle_y // gv.grid_length)
+    sc = int(middle_x // gv.grid_length)
+    sr = int(middle_y // gv.grid_length)
     return sr, sc
 
 def define_robot(number):

@@ -3,7 +3,7 @@ from robot import *
 from robot_animation import *
 import matplotlib.animation as animation
 from floodFill import flood_fill
-
+import tikzplotlib
 """
 The main script for path planning 
 """
@@ -12,10 +12,13 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-mymap.add_circle(15, 15, 6)
+# mymap.add_circle(15, 15, 3)
+# mymap.add_circle(40, 20, 4)
+mymap.add_circle(20, 30, 8)
+
 # add a triangle
 # mymap.add_polygon([10,10,25,10,25,25,10,25])
-mymap.add_polygon([28,28,38,28,38,38,28,38])
+# mymap.add_polygon([28,28,38,28,38,38,28,38])
 # mymap.show_map()
 
 # robot initialization
@@ -58,18 +61,21 @@ for time in range(gv.Iteration-1):
         elif robot.inside_tangent_planner and time<robot.tangent_end_time-1:
             cur_target=robot.get_target_from_tangent(time)
             if robot.check_bug_neighbour(time):
-                robot.avoid_robot(time)
+                robot.reset_target(time)
+                robot.update_state(time)
                 robot.reset_tangent()
                 print("robot meet and stop boundary following")
             else:
+                cur_target = robot.get_target_from_tangent(time)
                 robot.update_state_tangent(time, cur_target)
         elif not robot.boundary_follow_finished and time==robot.tangent_end_time-1:
-            cur_target = robot.get_target_from_tangent(time)
             if robot.check_bug_neighbour(time):
-                robot.avoid_robot(time)
+                robot.reset_target(time)
+                robot.update_state(time)
                 robot.reset_tangent()
                 print("robot meet and stop boundary following")
             else:
+                cur_target = robot.get_target_from_tangent(time)
                 robot.update_state_tangent(time, cur_target)
 
         elif robot.boundary_follow_finished and time==robot.tangent_end_time-1:
@@ -78,8 +84,10 @@ for time in range(gv.Iteration-1):
             robot.followed_curve.remove([0,0])
             sr, sc = get_middle_point(robot.followed_curve)
             print("sr,sc:", sr, sc)
+
             obstacle_color = -1
             robot.tarobsmap = flood_fill(robot, sr, sc, obstacle_color)
+            print("flood fill is done")
         else:
             robot.reset_tangent()
             robot.update_state(time)
@@ -113,46 +121,46 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target28.png')
+plt.savefig('../image/target29.png')
 plt.show()
 
 
 # plot the robot path
-def plot_robot_path(robotList, mymap):
 
-    figure3=plt.figure('robot path ', figsize=(7,7))
-    for robot in robotList:
-        plt.plot(robot.state[:time, 0], robot.state[:time, 1])
-    for obstacle in mymap.obstacles:
-        plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2 )
-    plt.xlim(0, gv.x_bound)
-    plt.ylim(0, gv.y_bound)
-    plt.axis('equal')
-    plt.xlabel("X coordinate [m]")
-    plt.ylabel("Y coordinate [m]")
-    plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-    plt.savefig('../image/path28.png')
 
-plot_robot_path(robotList, mymap)
+figure3=plt.figure('robot path ', figsize=(7,7))
+for robot in robotList:
+    plt.plot(robot.state[:time, 0], robot.state[:time, 1])
+for obstacle in mymap.obstacles:
+    plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2 )
+plt.xlim(0, gv.x_bound)
+plt.ylim(0, gv.y_bound)
+plt.axis('equal')
+plt.xlabel("X coordinate [m]")
+plt.ylabel("Y coordinate [m]")
+plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
+plt.savefig('../image/path31.png')
+tikzplotlib.save("../tex_files/path_31.tex")
+
 
 
 # 2D animation
 anim=visualize(robotList, mymap,time)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation28.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation31.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
-# subfig1=figure4.add_subplot(221)
+subfig1=figure4.add_subplot(221)
 show_infomap(robotList[0], mymap)
-# subfig2=figure4.add_subplot(222)
-# show_infomap(robotList[1], mymap)
-# subfig3=figure4.add_subplot(223)
-# show_infomap(robotList[2], mymap)
-# subfig4=figure4.add_subplot(224)
-# show_merge_infomap(robotList)
+subfig2=figure4.add_subplot(222)
+show_infomap(robotList[1], mymap)
+subfig3=figure4.add_subplot(223)
+show_infomap(robotList[2], mymap)
+subfig4=figure4.add_subplot(224)
+show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap28.png')
+plt.savefig('../image/infomap31.png')
 
 
 
