@@ -14,21 +14,44 @@ mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
 # mymap.add_circle(15, 15, 3)
 # mymap.add_circle(40, 20, 4)
-mymap.add_circle(20, 30, 8)
+# mymap.add_circle(20, 30, 8)
 
 # add a triangle
 # mymap.add_polygon([10,10,25,10,25,25,10,25])
-# mymap.add_polygon([28,28,38,28,38,38,28,38])
+mymap.add_polygon([15,15,20,15,20,20,15,20])
+mymap.add_circle(5,5,3)
+
 # mymap.show_map()
 
 # robot initialization
-# define three robot and initialize the state and target
+# define robots
 robotList = define_robot(gv.robot_number)
-for robot in robotList:
-    robot.random_init_state(mymap)
-    robot.random_init_target()
-    print(robot.state[0])  # test the initial state has been passed to the state
-    print(robot.target[0])
+
+# set the initial state and target randomly or manually
+random=0
+if random:
+    # initialize the state and target automatically and randomly
+    for robot in robotList:
+        robot.random_init_state(mymap)
+        robot.random_init_target()
+        print(robot.state[0])  # test the initial state has been passed to the state
+        print(robot.target[0])
+else:
+    # initialize the robot manually
+    # the number of robot is set in global_value.py file
+    robot1=robotList[0]
+    robot1.set_init_state(15,22)
+    robot1.set_init_target(17,19)
+    #
+    robot2=robotList[1]
+    robot2.set_init_state(21,18)
+    robot2.set_init_target(19,19)
+    #
+    # robot3=robotList[2]
+    # robot3.set_init_state(10,10)
+    # robot3.set_init_target(12,14)
+
+# show the robot initial position and environment map
 show_robot(robotList, mymap)
 
 # iteration
@@ -44,17 +67,22 @@ for time in range(gv.Iteration-1):
         robot.update_info_map(time, mymap)
         # if robot.motionmode==0:
         #     robot.update_target(time)
-        robot.update_target(time)
+        # robot.update_target(time)
         cur_target = robot.target[time]
-        robot.update_motion_mode(time, mymap, cur_target)
-        # get motion mode
-        motion_mode=robot.motion_mode
+        if robot.motion_mode==0:
+            robot.update_motion_mode(time, mymap, cur_target)
         # update the target based on the motion-mode
-        if motion_mode==1 and not robot.inside_tangent_planner :
+        if robot.motion_mode==1 and not robot.inside_tangent_planner :
             target_t=robot.target[time]
             print("start boundary follow")
-            print("motion-mode:", motion_mode)
+            print("motion-mode:", robot.motion_mode)
             targets, boundary_follow_finished, followed_curve=robot.tangent_bug_planner(time, mymap)
+            # if boundary_follow_finished:
+            #     robot.followed_curve.remove([0, 0])
+            #     sr, sc = get_middle_point(robot.followed_curve)
+            #     print("sr,sc:", sr, sc)
+            #     obstacle_color = -1
+            #     robot.tarobsmap = flood_fill(robot, sr, sc, obstacle_color)
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
 
@@ -81,6 +109,7 @@ for time in range(gv.Iteration-1):
         elif robot.boundary_follow_finished and time==robot.tangent_end_time-1:
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
+            robot.reset_tangent()
             robot.followed_curve.remove([0,0])
             sr, sc = get_middle_point(robot.followed_curve)
             print("sr,sc:", sr, sc)
@@ -89,7 +118,7 @@ for time in range(gv.Iteration-1):
             robot.tarobsmap = flood_fill(robot, sr, sc, obstacle_color)
             print("flood fill is done")
         else:
-            robot.reset_tangent()
+            robot.update_target(time)
             robot.update_state(time)
 
     # merge the infomap of the robots
@@ -99,13 +128,14 @@ for time in range(gv.Iteration-1):
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent>=0.85:
-        print("Area Covered successfully with 85%")
+    if coverage_percent>=0.98 :
+        print("Area Covered successfully with 98%")
         break
 
 ###############################################
 
 # plot the coverage percent
+# todo write the plot functions in separate file
 show_coverage_percent(c_percent)
 
 # plot the robot target position
@@ -121,7 +151,7 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/target29.png')
+plt.savefig('../image/target32.png')
 plt.show()
 
 
@@ -139,15 +169,15 @@ plt.axis('equal')
 plt.xlabel("X coordinate [m]")
 plt.ylabel("Y coordinate [m]")
 plt.title("The robot path with simulation time %i " %gv.T + ",time step %1.3f s " %gv.step_size +",robot number %i" %gv.robot_number   )
-plt.savefig('../image/path31.png')
-tikzplotlib.save("../tex_files/path_31.tex")
+plt.savefig('../image/path32.png')
+tikzplotlib.save("../tex_files/path_32.tex")
 
 
 
 # 2D animation
 anim=visualize(robotList, mymap,time)
 writervideo = animation.FFMpegWriter(fps=10) # fps is (frames per second)
-anim.save('../image/robot_path_animation31.mp4', writer=writervideo)
+anim.save('../image/robot_path_animation32.mp4', writer=writervideo)
 
 # plot the information map of the robot
 figure4=plt.figure('robot information map ', figsize=(10,10))
@@ -155,12 +185,12 @@ subfig1=figure4.add_subplot(221)
 show_infomap(robotList[0], mymap)
 subfig2=figure4.add_subplot(222)
 show_infomap(robotList[1], mymap)
-subfig3=figure4.add_subplot(223)
-show_infomap(robotList[2], mymap)
+# subfig3=figure4.add_subplot(223)
+# show_infomap(robotList[2], mymap)
 subfig4=figure4.add_subplot(224)
 show_merge_infomap(robotList)
 
-plt.savefig('../image/infomap31.png')
+plt.savefig('../image/infomap32.png')
 
 
 

@@ -13,7 +13,7 @@ import env_map as env
 import methods as m
 import collections
 from tangentbug import *
-
+from floodFill import flood_fill
 
 class Robot:
     number_of_robot = 0
@@ -33,7 +33,7 @@ class Robot:
         # d_tan is the activation distance for tangent bug
         self.d_tan=self.rs/4
         # d_position_limit, the limit for updating the state of each step
-        self.d_position_limit=2
+        self.d_position_limit=0.6
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
@@ -102,8 +102,8 @@ class Robot:
             # todo fix the random initial later
             while not flag_obs:
                 inside=0
-                x_i = np.random.uniform(0, 1) * gv.x_bound
-                y_i = np.random.uniform(0, 1) * gv.y_bound
+                x_i = np.random.uniform(0.1, 0.9) * gv.x_bound
+                y_i = np.random.uniform(0.1, 0.9) * gv.y_bound
                 for bound in bounding_boxes:
                     if bound[0]-self.r_tan<x_i<bound[1]+self.r_tan and bound[2]-self.r_tan<y_i<bound[3]+self.r_tan:
                         inside=1
@@ -153,7 +153,7 @@ class Robot:
             theta = np.random.random() * 2 * math.pi
             x = center_x + r * math.cos(theta)
             y = center_y + r * math.sin(theta)
-            if gv.x_bound > x > 0 and gv.y_bound > y > 0:
+            if gv.x_bound*0.8 > x > 0.2*gv.x_bound and gv.y_bound*0.8 > y > gv.y_bound*0.2:
                 flag = 0
         # target can also be float, a round may not be necessary
         # todo delete the round()
@@ -162,14 +162,23 @@ class Robot:
         # 0 row of target matrix is the random initial target
         self.target[0] = self.initial_target
 
-    def set_init_state_target(self):
+    def set_init_state(self,x, y):
         """
         set the initial state and target
-        Returns:
+        Returns:no return, update the self.state
 
         """
-        pass
+        self.state[0,:]=[x, y, 0, 0]
+        self.initial_state=[x, y, 0, 0]
 
+    def set_init_target(self, x, y):
+        """
+        set the initial target manually
+        Returns: no return, update the self.target
+
+        """
+        self.target[0]=[x,y]
+        self.initial_target=[x,y]
 
     def update_state(self, time):
         # get the current state
@@ -598,6 +607,7 @@ class Robot:
                 break
             elif boundary_follow_finished:
                 print("Boundary following finished")
+
                 break
             else:
                 inner_time += 1
@@ -651,6 +661,7 @@ class Robot:
         inner_time=time-self.tangent_start_time
         cur_target=self.tangent_targets[inner_time]
         self.target[time]=cur_target
+        self.target[time+1]=self.tangent_targets[inner_time+1]
 
         return cur_target
 
@@ -666,13 +677,17 @@ class Robot:
 
     def check_bug_neighbour(self, time):
         q_i=self.state[time,:2]
-        meet_distance=self.rc/3
+        meet_distance=self.rc/2
         flag=0
+        traveled_time_i=time-self.tangent_start_time
         for r in self.neighbour:
             q_j=r.state[time,:2]
+            traveled_time_j=time-r.tangent_start_time
+            time_d=traveled_time_i-traveled_time_j
             distance=np.linalg.norm(q_i-q_j)
-            if r.motion_mode and distance<meet_distance:
+            if r.motion_mode and distance<meet_distance and time_d<=0:
                 flag=1
+                print("robots meet and leave boundary following mode ")
                 return True
         if not flag:
             return False
@@ -779,20 +794,16 @@ class Robot:
         cur_v=self.state[time,2:]
         cur_state=self.state[time,:2]
         negative_v=-cur_v/np.linalg.norm(cur_v)
-        step_len=8
+        step_len=3*self.rs
         temp_target=step_len*negative_v+cur_state
 
-        self.target[time]=temp_target
+        # limit the target point inside the boundary
+        if gv.x_bound<temp_target[0] or temp_target[0]<0:
+            temp_target[0]=gv.x_bound*0.8
+        if gv.y_bound<temp_target[1] or temp_target[1]<0:
+            temp_target[1] = gv.y_bound * 0.8
 
-
-
-
-
-
-
-
-
-
+        self.target[time+1]=temp_target
 
 
 
