@@ -5,14 +5,21 @@ and animation of the robot behaviour
 """
 from matplotlib import pyplot as plt
 from matplotlib import animation
-import numpy as np
 import global_value as gv
 
 
-def visualize(robot_list, mymap,num_time):
+def visualize_motion(robot_list, mymap,num_time):
+    """
 
+    Args:
+        robot_list: a list of robot objects
+        mymap: environment map
+        num_time: simulation time
 
-    fig = plt.figure()
+    Returns:
+
+    """
+    fig = plt.figure('robot motion animation ', figsize=(6, 6))
     ax=plt.subplot(111, aspect = 'equal')
     line,=ax.plot([],[],'ro')
     plt.xlim(-10,gv.x_bound+10)
@@ -41,10 +48,16 @@ def visualize(robot_list, mymap,num_time):
                                  frames=num_time,
                                  init_func=init,
                                  blit=True,
-                                 interval=80)
-    plt.show()
+                                 interval=100)
+
+    # save video
+    write_video = animation.FFMpegWriter(fps=10)  # fps is (frames per second)
+    anim.save('../image/robot_path_animation32.mp4', writer=write_video)
+    # plt.show()
 
     return anim
+
+
 
 
 

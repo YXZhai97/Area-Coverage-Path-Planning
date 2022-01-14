@@ -5,7 +5,6 @@ Author: Yixing Zhai
 Date: 17.11.2021
 
 """
-import matplotlib.pyplot as plt
 
 from env_map import *
 
@@ -29,76 +28,72 @@ def tangent_bug(start_point, goal_point, my_map):
     info_map = np.zeros((y_n, x_n))
     rs = 4
     step_len = 0.5
-    time=0
-    time_limit=200 # end the simulation with time limit
+    time = 0
+    time_limit = 200  # end the simulation with time limit
     mode = 0  # mode=0 motion to goal, mode=1 boundary follow
     # get the intersection curve and endpoints
-    followed_curve=np.zeros(2)
-    hit_point=[]
-    hit_time=0
-    boundary_follow_finished=False
-
+    followed_curve = np.zeros(2)
+    hit_point = []
+    hit_time = 0
+    boundary_follow_finished = False
 
     # start the main while loop
     while True:
-        if time==0:
-            cur_state=state
+        if time == 0:
+            cur_state = state
         else:
-            cur_state=state[time]
+            cur_state = state[time]
 
-        is_intersect, end_points, scanned_curve=get_curve(obstacles,cur_state,goal_point,rs)
-        uniqe_scanned_curve=list(map(list,set(map(tuple,scanned_curve))))
-        followed_curve=np.vstack((followed_curve,uniqe_scanned_curve))
-        followed_curve=list(map(list,set(map(tuple,followed_curve))))
+        is_intersect, end_points, scanned_curve = get_curve(obstacles, cur_state, goal_point, rs)
+        uniqe_scanned_curve = list(map(list, set(map(tuple, scanned_curve))))
+        followed_curve = np.vstack((followed_curve, uniqe_scanned_curve))
+        followed_curve = list(map(list, set(map(tuple, followed_curve))))
         print("end points", end_points)
 
-
-        if end_points==[] or mode==0:
+        if end_points == [] or mode == 0:
             print("not intersect")
             temp_goal = goal_point
         else:
             temp_goal = get_heuristic_goal(cur_state, goal_point, end_points)
         print("temp goal", temp_goal)
 
-
-        if mode==0: # go straight to goal
-            new_state=go_straight(cur_state,temp_goal,step_len)
-            mode=check_along(new_state, cur_state, followed_curve, goal_point, rs, temp_goal)
+        if mode == 0:  # go straight to goal
+            new_state = go_straight(cur_state, temp_goal, step_len)
+            mode = check_along(new_state, cur_state, followed_curve, goal_point, rs, temp_goal)
             if mode:
                 print("end motion to goal, start boundary following")
-                hit_point=new_state # store the boundary following point
+                hit_point = new_state  # store the boundary following point
                 print("hit point", hit_point)
-                hit_time=time
-                print("hit time",hit_time)
-                dy=temp_goal[1]-new_state[1]
-                dx=temp_goal[0]-new_state[0]
-                previous_angle=atan2(dy,dx)
+                hit_time = time
+                print("hit time", hit_time)
+                dy = temp_goal[1] - new_state[1]
+                dx = temp_goal[0] - new_state[0]
+                previous_angle = atan2(dy, dx)
         else:
-            new_state, new_angle=boundary_follow(previous_angle,cur_state,temp_goal,step_len,uniqe_scanned_curve)
-            previous_angle=new_angle
-            mode=check_off(new_state, followed_curve, goal_point, rs, obstacles, step_len, end_points)
+            new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, uniqe_scanned_curve)
+            previous_angle = new_angle
+            mode = check_off(new_state, followed_curve, goal_point, rs, obstacles, step_len, end_points)
 
-            if mode==0:
+            if mode == 0:
                 print("end boundary following, start motion to goal ")
 
-        state = np.vstack((state,new_state))
+        state = np.vstack((state, new_state))
         print("time step:", time)
 
-        if mode==1 and np.linalg.norm(new_state-hit_point)<rs and time-hit_time>20:
+        if mode == 1 and np.linalg.norm(new_state - hit_point) < rs and time - hit_time > 20:
+            boundary_follow_finished = True
 
-            boundary_follow_finished=True
-
-        if (new_state==goal_point).all():
+        if (new_state == goal_point).all():
             print("Goal reached")
             break
-        elif time>time_limit:
+        elif time > time_limit:
             print("Time limit reached")
             break
         elif boundary_follow_finished:
             print("Boundary following finished")
             break
         else:
-            time+=1
+            time += 1
     return state, followed_curve
 
 
@@ -124,10 +119,10 @@ def get_curve(obstacles, cur_state, goal_point, rs):
     circle_scanned = np.zeros((num_iter, 2))
     circle_occupied = np.zeros(num_iter)
 
-    end_points=[]
+    end_points = []
     is_intersect = False
-    intersect_end_points=[]
-    intersect_curve=[]
+    intersect_end_points = []
+    intersect_curve = []
 
     for i in range(num_iter):
         len_close = rs
@@ -146,37 +141,37 @@ def get_curve(obstacles, cur_state, goal_point, rs):
                     # print(cur_to_obs)
                     if cur_to_obs < len_close:
                         circle_scanned[i] = obs_point
-                        len_close=cur_to_obs
+                        len_close = cur_to_obs
                         if circle_occupied[i] == 0:
                             circle_occupied[i] = 1
 
     continue_list = np.zeros(num_iter)
     for i in range(num_iter):
-        if i ==0:
-            continue_list[i]=circle_occupied[i]+circle_occupied[i+1]+circle_occupied[-1]
-        elif i==num_iter-1:
-            continue_list[i]=circle_occupied[i-1]+circle_occupied[0]+circle_occupied[i]
+        if i == 0:
+            continue_list[i] = circle_occupied[i] + circle_occupied[i + 1] + circle_occupied[-1]
+        elif i == num_iter - 1:
+            continue_list[i] = circle_occupied[i - 1] + circle_occupied[0] + circle_occupied[i]
         else:
-            continue_list[i]=circle_occupied[i-1]+circle_occupied[i+1]+circle_occupied[i]
-        if continue_list[i]==2:
+            continue_list[i] = circle_occupied[i - 1] + circle_occupied[i + 1] + circle_occupied[i]
+        if continue_list[i] == 2:
             end_points.append(circle_scanned[i])
 
     end_point_num = len(end_points)
     if end_point_num == 2:
         is_intersect = check_intersection(cur_state, goal_point, end_points)
         if is_intersect:
-            intersect_end_points=end_points
+            intersect_end_points = end_points
 
     else:
         for i in range(end_point_num):
-            if i ==0:
-                ep=[end_points[0],end_points[-1]]
-                is_intersect=check_intersection(cur_state,goal_point,ep)
-            elif i%2==1 and i!=end_point_num-1:
-                ep=[end_points[i],end_points[i+1]]
+            if i == 0:
+                ep = [end_points[0], end_points[-1]]
+                is_intersect = check_intersection(cur_state, goal_point, ep)
+            elif i % 2 == 1 and i != end_point_num - 1:
+                ep = [end_points[i], end_points[i + 1]]
                 is_intersect = check_intersection(cur_state, goal_point, ep)
             if is_intersect:
-                intersect_end_points=ep
+                intersect_end_points = ep
                 break
 
     return is_intersect, end_points, circle_scanned
@@ -192,12 +187,12 @@ def check_intersection(cur_p, goal_p, end_points):
         is_intersect: True or Flase
     """
     # print("end points", end_points)
-    if end_points==[]:
+    if end_points == [] or len(end_points)==1:
         return False
     o1 = end_points[0]
     o2 = end_points[1]
 
-    def orientation(p,q,r):
+    def orientation(p, q, r):
         val = ((q[1] - p[1]) * (r[0] - q[0])) - ((q[0] - p[0]) * (r[1] - q[1]))
         if val == 0:
             return 0
@@ -208,7 +203,7 @@ def check_intersection(cur_p, goal_p, end_points):
             return True
         return False
 
-    ori1=orientation(o1, o2, cur_p)
+    ori1 = orientation(o1, o2, cur_p)
     ori2 = orientation(o1, o2, goal_p)
     ori3 = orientation(cur_p, goal_p, o1)
     ori4 = orientation(cur_p, goal_p, o2)
@@ -221,7 +216,6 @@ def check_intersection(cur_p, goal_p, end_points):
     if ori4 == 0 and on_segment(cur_p, goal_p, o2): return True
 
     return False
-
 
 
 def get_line(p1, p2, x):
@@ -240,98 +234,94 @@ def get_line(p1, p2, x):
     return y
 
 
-def get_heuristic_goal(cur_state,goal_point,end_points):
-    heuristic_d0=np.linalg.norm(cur_state-end_points[0])+np.linalg.norm(end_points[0]-goal_point)
-    heuristic_d1=np.linalg.norm(cur_state-end_points[1])+np.linalg.norm(end_points[1]-goal_point)
+def get_heuristic_goal(cur_state, goal_point, end_points):
+    heuristic_d0 = np.linalg.norm(cur_state - end_points[0]) + np.linalg.norm(end_points[0] - goal_point)
+    heuristic_d1 = np.linalg.norm(cur_state - end_points[1]) + np.linalg.norm(end_points[1] - goal_point)
 
-    if heuristic_d0>heuristic_d1:
-        oi=end_points[1]
+    if heuristic_d0 > heuristic_d1:
+        oi = end_points[1]
     else:
-        oi=end_points[0]
+        oi = end_points[0]
 
     return oi
 
 
 def go_straight(cur_state, temp_goal, step_len):
-
-    dy=temp_goal[1]-cur_state[1]
-    dx=temp_goal[0]-cur_state[0]
-    angle=atan2(dy,dx)
-    distance=np.linalg.norm(cur_state-temp_goal)
-    if distance>step_len:
-        next_x=cur_state[0]+cos(angle)*step_len
-        next_y=cur_state[1]+sin(angle)*step_len
-        next_state=np.array([next_x,next_y])
+    dy = temp_goal[1] - cur_state[1]
+    dx = temp_goal[0] - cur_state[0]
+    angle = atan2(dy, dx)
+    distance = np.linalg.norm(cur_state - temp_goal)
+    if distance > step_len:
+        next_x = cur_state[0] + cos(angle) * step_len / 4
+        next_y = cur_state[1] + sin(angle) * step_len / 4
+        next_state = np.array([next_x, next_y])
     else:
-        next_state=temp_goal
+        next_state = temp_goal
 
     return next_state
 
 
-
-
 def boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve):
-
-    cur_angle=previous_angle
-    n_points=len(scanned_curve)
-    min_dist=inf
-    close_point=scanned_curve[0]
+    cur_angle = previous_angle
+    n_points = len(scanned_curve)
+    min_dist = inf
+    close_point = scanned_curve[0]
     for i in range(n_points):
-        obs_point=scanned_curve[i]
-        distance=np.linalg.norm(cur_state-obs_point)
-        if distance<min_dist:
-            min_dist=distance
-            close_point=obs_point
+        obs_point = scanned_curve[i]
+        distance = np.linalg.norm(cur_state - obs_point)
+        if distance < min_dist:
+            min_dist = distance
+            close_point = obs_point
     print("close point", close_point)
 
-    dy=close_point[1]-cur_state[1]
-    dx=close_point[0]-cur_state[0]
-    closest_angle=atan2(dy,dx)
+    dy = close_point[1] - cur_state[1]
+    dx = close_point[0] - cur_state[0]
+    closest_angle = atan2(dy, dx)
     # if closest_angle<0 and cur_angle>0:
     #     closest_angle=-closest_angle
 
-    if cur_angle>closest_angle:
-        next_angle= closest_angle+pi/2
-        if cur_angle-next_angle>pi/2:
-            next_angle+=pi
+    if cur_angle > closest_angle:
+        next_angle = closest_angle + pi / 2
+        if cur_angle - next_angle > pi / 2:
+            next_angle += pi
 
     else:
-        next_angle=closest_angle-pi/2
-        if next_angle-cur_angle>pi/2:
-            next_angle-=pi
+        next_angle = closest_angle - pi / 2
+        if next_angle - cur_angle > pi / 2:
+            next_angle -= pi
 
+    # print("next angle", next_angle/pi*180)
+    start_x = (cur_state[0] - close_point[0]) * gv.r_tan / min_dist + close_point[0]
+    start_y = (cur_state[1] - close_point[1]) * gv.r_tan / min_dist + close_point[1]
 
-
-    print("next angle", next_angle/pi*180)
-
-    next_x=cur_state[0]+cos(next_angle)*step_len
-    next_y=cur_state[1]+sin(next_angle)*step_len
-    next_state=np.array([next_x,next_y])
+    next_x = start_x + cos(next_angle) * step_len
+    next_y = start_y + sin(next_angle) * step_len
+    next_state = np.array([next_x, next_y])
 
     return next_state, next_angle
 
 
 # some difference here
-def check_along(cur_state, previous_state, curve, goal_point, rs, temp_goal):
+def check_along(cur_state, previous_state, curve, goal_point, r_tan, temp_goal):
     curve = list(map(list, set(map(tuple, curve))))
-    curve.remove([0,0])
-    min_dis=get_closest_distance(cur_state,curve)
-    heuristic_previous=np.linalg.norm(previous_state-goal_point)
-    heuristic_cur=np.linalg.norm(cur_state-goal_point)
-    if heuristic_cur>heuristic_previous or min_dis<0.2*rs:
-        mode=1
+    curve.remove([0, 0])
+    min_dis = get_closest_distance(cur_state, curve)
+    heuristic_previous = np.linalg.norm(previous_state - goal_point)
+    heuristic_cur = np.linalg.norm(cur_state - goal_point)
+    if heuristic_cur > heuristic_previous or min_dis < r_tan:
+        mode = 1
     else:
-        mode=0
+        mode = 0
 
     return mode
 
 
 def check_off(cur_state, curve, goal_point, rs, obstacles, step_len, end_points):
-    curve=list(map(list,set(map(tuple,curve))))
-    curve.remove([0,0])
-    min_dis=get_closest_distance(cur_state,curve)
-    d_reach = np.linalg.norm(cur_state-goal_point)
-    d_followed=get_closest_distance(goal_point,curve)
+    curve = list(map(list, set(map(tuple, curve))))
+    curve.remove([0, 0])
+    min_dis = get_closest_distance(cur_state, curve)
+    d_reach = np.linalg.norm(cur_state - goal_point)
+    d_followed = get_closest_distance(goal_point, curve)
 
     # is_intersect=check_intersection(cur_state, goal_point, end_points)
     # if is_intersect:
@@ -340,16 +330,16 @@ def check_off(cur_state, curve, goal_point, rs, obstacles, step_len, end_points)
     # else:
     #     mode=0
     #     return mode
-    if end_points==[]:
-        mode=0
+    if end_points == []:
+        mode = 0
         return mode
 
-    print("d_reach",d_reach)
-    print("d_followwd",d_followed)
-    if d_reach<d_followed :
-        mode=0
+    print("d_reach", d_reach)
+    print("d_followwd", d_followed)
+    if d_reach < d_followed:
+        mode = 0
     else:
-        mode=1
+        mode = 1
 
     return mode
 
@@ -362,14 +352,15 @@ def get_closest_distance(state, curve):
     Returns:
 
     """
-    n_points=len(curve)
-    min_dis=inf
+    n_points = len(curve)
+    min_dis = inf
     for i in range(n_points):
-        obs_point=curve[i]
-        distance=np.linalg.norm(state-obs_point)
+        obs_point = curve[i]
+        distance = np.linalg.norm(state - obs_point)
         if distance < min_dis:
-            min_dis=distance
+            min_dis = distance
     return min_dis
+
 
 def test_tangentbug():
     mymap = EnvMap(50, 50, 1)
@@ -391,7 +382,7 @@ def test_tangentbug():
 
     # print(get_line([1,2],[8,0],3))
 
-    state, followed_curve= tangent_bug(start_point, goal_point, mymap)
+    state, followed_curve = tangent_bug(start_point, goal_point, mymap)
     plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
     plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
@@ -402,13 +393,14 @@ def test_get_curve():
     mymap = EnvMap(50, 50, 1)
     mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
     mymap.show_map()
-    obstacles=mymap.obstacles
-    cur_state=[26,23]
-    goal_point=[24,11]
-    rs=3
-    is_intersect, intersect_end_points, circle_scanned=get_curve(obstacles, cur_state, goal_point, rs)
+    obstacles = mymap.obstacles
+    cur_state = [26, 23]
+    goal_point = [24, 11]
+    rs = 3
+    is_intersect, intersect_end_points, circle_scanned = get_curve(obstacles, cur_state, goal_point, rs)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     # mymap = EnvMap(50, 50, 1)
     # mymap.add_polygon([10, 10, 25, 10, 25, 25, 10, 25])
     # mymap.show_map()
@@ -438,15 +430,12 @@ if __name__=="__main__":
     # print(get_line([1,2],[8,0],3))
 
     state, followed_curve = tangent_bug(start_point, goal_point, mymap)
-    min_x=min([sub[0] for sub in followed_curve])
-    max_x=max([sub[0] for sub in followed_curve])
-    min_y=min([sub[1] for sub in followed_curve])
-    max_y=max([sub[1] for sub in followed_curve])
-    print(min_x,min_y, max_x, max_y)
+    min_x = min([sub[0] for sub in followed_curve])
+    max_x = max([sub[0] for sub in followed_curve])
+    min_y = min([sub[1] for sub in followed_curve])
+    max_y = max([sub[1] for sub in followed_curve])
+    print(min_x, min_y, max_x, max_y)
     plt.plot(state[:, 0], state[:, 1], c='r', linewidth=2)
     plt.scatter(start_point[0], start_point[1], c='r')
     plt.scatter(goal_point[0], goal_point[1], c='g')
     plt.savefig('../image/tangent_bug_poly_20.png')
-
-
-

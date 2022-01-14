@@ -1,9 +1,11 @@
 import math
 
 # robot parameters
+# rs=4 suitable for 50x50 grid map rs=3 suitable for 30x30 map
 rs=4
 rc=6
-r_tan=rs
+r_tan=rs/5
+target_distance=rs
 dimension=2
 robotList=[] # a list of robot
 d_alpha=12
@@ -22,8 +24,8 @@ c2_gamma=2*math.sqrt(c1_gamma)
 grid_map=[]
 
 # environment parameters
-x_bound=25
-y_bound=25
+x_bound=30
+y_bound=30
 v_bound=2
 grid_length=1
 x_n=int(x_bound/grid_length) # number of grid in x direction
@@ -36,7 +38,7 @@ k1=0.04
 k2=0.01
 rohgamma=0.2
 # simulation parameters
-robot_number=2
+robot_number=3
 T=80 # total simulation time
 step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number

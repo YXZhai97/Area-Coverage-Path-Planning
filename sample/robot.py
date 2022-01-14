@@ -23,7 +23,9 @@ class Robot:
         self.id = self.number_of_robot
         self.rs = gv.rs
         self.rc = gv.rc
+        # r_tan: tangent bug distance to the obstacle
         self.r_tan=gv.r_tan
+        self.target_distance=gv.target_distance
         self.dimension = gv.dimension
 
         # robot motion mode
@@ -31,15 +33,15 @@ class Robot:
         # boundary following 1
         self.motion_mode=0
         # d_tan is the activation distance for tangent bug
-        self.d_tan=self.rs/4
+        self.d_tan=self.rs/5
         # d_position_limit, the limit for updating the state of each step
-        self.d_position_limit=0.6
+        self.d_position_limit=0.7
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.step_len=0.2
+        self.step_len=0.3
         self.tangent_end_time=0
         self.tangent_start_time=0
         self.inside_tangent_planner=False
@@ -397,7 +399,7 @@ class Robot:
                         for robot_j in neighbour:
                             center = get_center(x, y)
                             q_j = robot_j.state[time, :2]
-                            if m.sigma_norm(center[:2] - q_j) >= m.sigma_norm(center[:2] - q_i) > self.rs:
+                            if m.sigma_norm(center[:2] - q_j) >= m.sigma_norm(center[:2] - q_i) > self.target_distance:
                                 center = np.append(center, b_value[y, x])
                                 # set the last row of Xi_que [x,y,benefit_value]
                                 # append the queue with [0,0,0]
@@ -406,7 +408,7 @@ class Robot:
                                 b_value_que = np.append(b_value_que, [newrow], axis=0)
 
                     # if the robot has no neighbour at all
-                    elif m.sigma_norm(center - q_i) > self.rs:
+                    elif m.sigma_norm(center - q_i) > self.target_distance:
                         center = np.append(center, b_value[y, x])
                         b_value_que[-1] = center
                         newrow = np.zeros(3)
@@ -512,6 +514,7 @@ class Robot:
         is_intersect, intersect_end_points, circle_scanned=get_curve(obstacles, cur_state, new_target, rs)
         # check the distance
         min_dis=get_closest_distance(cur_state, circle_scanned)
+        # todo change the motion_mode early
         if is_intersect and min_dis<self.r_tan:
             self.motion_mode=1
             # print log info
@@ -529,12 +532,9 @@ class Robot:
         start_point=self.state[time, :2]
         inner_states = start_point  # the state array will be appended
         goal_point = self.target[time]
-        obs_map = mymap.grid_map
         obstacles = mymap.obstacles
-        x_n = mymap.x_n
-        y_n = mymap.y_n
-        info_map = np.zeros((y_n, x_n))
         rs = self.rs
+        r_tan=self.r_tan
         step_len = self.step_len
         inner_time = 0
         time_limit = 400  # end the simulation with time limit
@@ -567,18 +567,18 @@ class Robot:
                 temp_goal = goal_point
             else:
                 temp_goal = get_heuristic_goal(cur_state, goal_point, end_points)
-            print("temp goal", temp_goal)
+            # print("temp goal", temp_goal)
 
             if mode == 0:  # go straight to goal
                 new_state = go_straight(cur_state, temp_goal, step_len)
-                mode = check_along(new_state, cur_state, scanned_curve, goal_point, rs, temp_goal)
+                mode = check_along(new_state, cur_state, scanned_curve, goal_point, r_tan, temp_goal)
                 if mode :
                     if hit_times==0:
                         print("end motion to goal, start boundary following")
                         hit_point = new_state  # store the boundary following point
-                        print("hit point", hit_point)
+                        # print("hit point", hit_point)
                         hit_time = inner_time
-                        print("hit time", hit_time)
+                        # print("hit time", hit_time)
                         hit_times+=1
                     dy = temp_goal[1] - new_state[1]
                     dx = temp_goal[0] - new_state[0]
@@ -593,14 +593,19 @@ class Robot:
 
 
             inner_states = np.vstack((inner_states, new_state))
+
+
+
+
             print("time step:", inner_time)
 
-            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.3*rs and inner_time - hit_time > 10:
+            if mode == 1 and np.linalg.norm(new_state - hit_point) < 0.2*rs and inner_time - hit_time > 10:
                 boundary_follow_finished = True
                 self.boundary_follow_finished = True
 
             if (new_state == goal_point).all():
                 print("Goal reached")
+                self.boundary_follow_finished=True
                 break
             elif inner_time > time_limit:
                 print("Time limit reached")
@@ -611,9 +616,14 @@ class Robot:
                 break
             else:
                 inner_time += 1
+
+        # calculate the boundary following time
+
         tangent_start_time=time
-        tangent_dauration=inner_time+1
+        tangent_dauration=len(inner_states)-1
         tangent_end_time=tangent_start_time+tangent_dauration
+
+        # update the value
         self.tangent_end_time=tangent_end_time
         self.tangent_start_time=tangent_start_time
         self.tangent_targets=inner_states
@@ -651,6 +661,9 @@ class Robot:
         # calculate the deviation
         d_v = u_gamma * gv.step_size
         d_position = cur_v* gv.step_size
+        norm_d_position=np.linalg.norm(d_position)
+        if norm_d_position>self.step_len:
+            d_position=self.step_len/norm_d_position*d_position
 
         # add new state vector
         self.state[time + 1, :2] = cur_state + d_position
@@ -673,6 +686,7 @@ class Robot:
         self.tangent_targets = []
         self.boundary_follow_finished=False
         self.motion_mode=0
+        self.followed_curve = []
 
 
     def check_bug_neighbour(self, time):
@@ -794,7 +808,7 @@ class Robot:
         cur_v=self.state[time,2:]
         cur_state=self.state[time,:2]
         negative_v=-cur_v/np.linalg.norm(cur_v)
-        step_len=3*self.rs
+        step_len=2*self.rs
         temp_target=step_len*negative_v+cur_state
 
         # limit the target point inside the boundary
@@ -831,7 +845,7 @@ class Robot:
         q = self.state[time, :2]
 
         # find the closest point on obstacle
-        close_distance = 100
+        close_distance = self.rs
         close_point=[]
         for x in range(gv.x_n):
             for y in range(gv.y_n):
@@ -845,10 +859,30 @@ class Robot:
                     if distance < close_distance:
                         close_distance = distance
                         close_point = [x_center, y_center]
+                        return True
+        return False
 
-        beta_state = np.array(close_point)
+    def check_nearby_obs(self, time):
+        # robot current sate
+        q = self.state[time, :2]
 
-        return beta_state
+        # find the closest point on obstacle
+        close_distance = self.rs*1.3
+        close_point=[]
+        for x in range(gv.x_n):
+            for y in range(gv.y_n):
+                if self.tarobsmap[x, y] == -1:
+                    x_center = gv.grid_length / 2 + x * gv.grid_length
+                    y_center = gv.grid_length / 2 + y * gv.grid_length
+                    cell_center = np.array([x_center, y_center])
+                    distance = np.linalg.norm(q - cell_center)
+                    # update the closest point
+                    # set the closest point as beta neighbour
+                    if distance < close_distance:
+                        close_distance = distance
+                        close_point = [x_center, y_center]
+                        return True
+        return False
 
 
     # get the nearest beta point on k obstacle around the robot

@@ -3,26 +3,29 @@ define 2D map
 enable adding different shape of obstacles
 circle, polygon, irregular shape and walls
 '''
-import numpy as np
-import matplotlib.pyplot as plt
-from typing import List
 from math import *
+from typing import List
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 import global_value as gv
+
 
 class EnvMap:
     def __init__(self, x_bound, y_bound, grid_length):
         self.x_bound = x_bound
         self.y_bound = y_bound
         self.grid_length = grid_length
-        self.x_n = int(self.x_bound / self.grid_length) # number of grid in x direction
-        self.y_n = int(self.y_bound / self.grid_length) # number of grid in y direction
+        self.x_n = int(self.x_bound / self.grid_length)  # number of grid in x direction
+        self.y_n = int(self.y_bound / self.grid_length)  # number of grid in y direction
         self.grid_map = self.make_grid(self.x_n, self.y_n)
-        gv.env_map=self.grid_map
-        self.obstacles=[] # store the obstacle points
-        self.point_num=1000 # number of points on a obstacle
+        gv.env_map = self.grid_map
+        self.obstacles = []  # store the obstacle points
+        self.point_num = 1000  # number of points on a obstacle
 
     def make_grid(self, x_n, y_n):
-        grid=np.zeros((y_n,x_n))
+        grid = np.zeros((y_n, x_n))
         # grid[:,0]=1
         # grid[0,:]=1
         # grid[:,-1]=1
@@ -55,18 +58,14 @@ class EnvMap:
                     self.grid_map[j, i] = 1
 
         # create dense points on the circle
-        t=np.linspace(0, 2*pi, self.point_num)
-        circle=np.zeros((2, self.point_num))
+        t = np.linspace(0, 2 * pi, self.point_num)
+        circle = np.zeros((2, self.point_num))
         for i in range(self.point_num):
-            circle[0,i]=x_position+r*cos(t[i])
+            circle[0, i] = x_position + r * cos(t[i])
             circle[1, i] = y_position + r * sin(t[i])
 
         # add circle points to self.obstacles
         self.obstacles.append(circle)
-
-
-
-
 
     def add_polygon(self, key_points: List[int]):
         '''
@@ -80,7 +79,7 @@ class EnvMap:
         # append the first key_point to the end of the list
         key_points.append(key_points[0])
         key_points.append((key_points[1]))
-        poly_lines=[]
+        poly_lines = []
 
         # calculate the number of points
         number_of_points = int(len(key_points) / 2 - 1)
@@ -89,18 +88,13 @@ class EnvMap:
         for i in range(number_of_points):
             start_point = [key_points[2 * i], key_points[2 * i + 1]]
             end_point = [key_points[2 * i + 2], key_points[2 * i + 3]]
-            line_i=self.add_line(start_point, end_point)
-            if len(poly_lines)==0:
-                poly_lines=line_i
+            line_i = self.add_line(start_point, end_point)
+            if len(poly_lines) == 0:
+                poly_lines = line_i
             else:
-                poly_lines=np.concatenate((poly_lines,line_i),axis=1)
+                poly_lines = np.concatenate((poly_lines, line_i), axis=1)
 
         self.obstacles.append(poly_lines)
-
-
-
-
-
 
     def add_line(self, p1: List, p2: List):
         '''
@@ -159,14 +153,12 @@ class EnvMap:
         for point in points:
             self.grid_map[point[1], point[0]] = 1
 
-        line=np.zeros((2,self.point_num))
+        line = np.zeros((2, self.point_num))
         for i in range(self.point_num):
-            line[0,i]=p1[0]+i/self.point_num*(p2[0]-p1[0])
+            line[0, i] = p1[0] + i / self.point_num * (p2[0] - p1[0])
             line[1, i] = p1[1] + i / self.point_num * (p2[1] - p1[1])
 
         return line
-
-
 
     # def floodFill(self, sr, sc, newColor):
     #
@@ -211,33 +203,33 @@ class EnvMap:
             for j in range(self.y_n):
                 data_3d[j][i] = color_map[self.grid_map[j][i]]
 
-        figure1=plt.figure('2D grid map', figsize=(5,5))
+        figure1 = plt.figure('2D grid map', figsize=(5, 5))
         # add label
         plt.xlabel("X coordinate [m]")
         plt.ylabel("Y coordinate [m]")
         plt.title("2D grid map")
 
         # show image
-        plt.imshow(data_3d,origin='lower')
+        plt.imshow(data_3d, origin='lower')
 
         # show the obstacle points
         for obstacle in self.obstacles:
-            plt.plot(obstacle[0],obstacle[1])
+            plt.plot(obstacle[0], obstacle[1])
         plt.show()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     mymap = EnvMap(50, 50, 1)
     mymap.add_circle(30, 20, 10)
-    mymap.add_circle(10,15,8)
+    mymap.add_circle(10, 15, 8)
     # mymap.add_polygon([100,100,160,180,160,250,70,280])
     # # mymap.floodFill(90,60,1)
     mymap.show_map()
     print(mymap.obstacles)
-    bounding_box=[]
+    bounding_box = []
     for obs in mymap.obstacles:
         print(len(obs[0]))
-        x_max, y_max=max(obs[0]), max(obs[1])
+        x_max, y_max = max(obs[0]), max(obs[1])
         print("xmax, ymax", x_max, y_max)
         bounding_box.append([x_max, y_max])
 
@@ -247,5 +239,3 @@ if __name__=="__main__":
     # second_obs=mymap.obstacles[1]
     # third_obs = mymap.obstacles[2]
     # print(len(third_obs[0]))
-
-

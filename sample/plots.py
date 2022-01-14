@@ -31,7 +31,7 @@ def plot_target_position(robotList, mymap, time):
     plt.ylabel("Y coordinate [m]")
     plt.title(
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f" % rs)
-    plt.savefig('../image/target_4_rs.png')
+    plt.savefig('../image/target_34.png')
 
 
 def plot_coverage_percent(c_percent, time):
@@ -49,7 +49,7 @@ def plot_coverage_percent(c_percent, time):
     plt.xlabel("Simulation time")
     plt.ylabel("Coverage percent")
     plt.title("Area Coverage Percent")
-    plt.savefig('../image/coverage_percent.png')
+    plt.savefig('../image/coverage_percent34.png')
 
 
 def plot_robot_path(robotList, mymap, time):
@@ -87,7 +87,7 @@ def plot_robot_path(robotList, mymap, time):
 
     # save png file and tex file
     plt.savefig('../image/path_4_rs.png')
-    tikzplotlib.save("../tex_files/path_4_rs.tex")
+    tikzplotlib.save("../tex_files/path34.tex")
 
 
 def plot_robot_infomap(robotList, mymap):
@@ -95,12 +95,12 @@ def plot_robot_infomap(robotList, mymap):
     figure=plt.figure('robot information map ', figsize=(10, 10))
     subfig1 = figure.add_subplot(221)
     show_infomap(robotList[0], mymap)
-    # subfig2 = figure.add_subplot(222)
-    # show_infomap(robotList[1], mymap)
-    # subfig3=figure.add_subplot(223)
-    # show_infomap(robotList[2], mymap)
-    # subfig4 = figure.add_subplot(224)
-    # show_merge_infomap(robotList)
-    plt.savefig('../image/infomap_4_rs.png')
+    subfig2 = figure.add_subplot(222)
+    show_infomap(robotList[1], mymap)
+    subfig3=figure.add_subplot(223)
+    show_infomap(robotList[2], mymap)
+    subfig4 = figure.add_subplot(224)
+    show_merge_infomap(robotList)
+    plt.savefig('../image/infomap34.png')
 
 
