@@ -252,8 +252,8 @@ def go_straight(cur_state, temp_goal, step_len):
     angle = atan2(dy, dx)
     distance = np.linalg.norm(cur_state - temp_goal)
     if distance > step_len:
-        next_x = cur_state[0] + cos(angle) * step_len / 4
-        next_y = cur_state[1] + sin(angle) * step_len / 4
+        next_x = cur_state[0] + cos(angle) * step_len
+        next_y = cur_state[1] + sin(angle) * step_len
         next_state = np.array([next_x, next_y])
     else:
         next_state = temp_goal
