@@ -23,6 +23,8 @@ class EnvMap:
         gv.env_map = self.grid_map
         self.obstacles = []  # store the obstacle points
         self.point_num = 1000  # number of points on a obstacle
+        self.circle_bound=[] # [x,y,r]
+        self.polygon_bound=[] # [x_min, x_max, y_min, y_max]
 
     def make_grid(self, x_n, y_n):
         grid = np.zeros((y_n, x_n))
@@ -66,6 +68,7 @@ class EnvMap:
 
         # add circle points to self.obstacles
         self.obstacles.append(circle)
+        self.circle_bound.append([x_position, y_position, r])
 
     def add_polygon(self, key_points: List[int]):
         '''
@@ -95,6 +98,11 @@ class EnvMap:
                 poly_lines = np.concatenate((poly_lines, line_i), axis=1)
 
         self.obstacles.append(poly_lines)
+        x_min=min([key_points[0],key_points[2], key_points[4], key_points[6]])
+        x_max=max([key_points[0],key_points[2], key_points[4], key_points[6]])
+        y_min = min([key_points[1], key_points[3], key_points[5], key_points[7]])
+        y_max = max([key_points[1], key_points[3], key_points[5], key_points[7]])
+        self.polygon_bound.append([x_min, x_max, y_min, y_max])
 
     def add_line(self, p1: List, p2: List):
         '''
@@ -220,12 +228,13 @@ class EnvMap:
 
 if __name__ == "__main__":
     mymap = EnvMap(50, 50, 1)
-    mymap.add_circle(30, 20, 10)
+    # mymap.add_circle(30, 20, 10)
     mymap.add_circle(10, 15, 8)
-    # mymap.add_polygon([100,100,160,180,160,250,70,280])
+    mymap.add_circle(11,20,4)
+    mymap.add_polygon([20,20,25,20,25,25,20,25])
     # # mymap.floodFill(90,60,1)
     mymap.show_map()
-    print(mymap.obstacles)
+
     bounding_box = []
     for obs in mymap.obstacles:
         print(len(obs[0]))

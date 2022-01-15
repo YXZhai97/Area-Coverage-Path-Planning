@@ -19,5 +19,6 @@ print(target[:2,0])
 target=[1,2,3,4,5,6]
 print(target[1:])
 
-end_points=[[1,2],[3,4]]
-print(end_points[0])
+end_points=[[1,2],[3,4],[1,1]]
+for i in end_points:
+    print(i[1])

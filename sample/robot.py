@@ -369,8 +369,9 @@ class Robot:
         for robot_j in neighbour:
             q_j = robot_j.state[time, :2]
             cur_target_j = robot_j.target[time]
+            # todo debug
             if m.sigma_norm(cur_target - cur_target_j) < self.rs and m.sigma_norm(q_j - cur_target_j) < m.sigma_norm(
-                    q_i - cur_target):
+                    q_i - cur_target) and robot_j.motion_mode==0:
                 c = 1
                 break
 
@@ -440,6 +441,24 @@ class Robot:
 
         self.target[time + 1] = new_target
         return new_target
+
+    def check_inside_obs(self, time, mymap):
+
+        cur_target=self.target[time]
+        for circle in mymap.circle_bound:
+            distance=sqrt((cur_target[0]-circle[0])**2+(cur_target[1]-circle[1])**2)
+            if distance < circle[2]:
+                return True
+
+        for bound in mymap.polygon_bound:
+            if bound[0]<cur_target[0]<bound[1] and bound[2]<cur_target[1]<bound[3]:
+                return True
+
+        return False
+
+
+
+
 
 
     def update_info_map(self, time, mymap):
@@ -515,14 +534,20 @@ class Robot:
         # check the distance
         min_dis=get_closest_distance(cur_state, circle_scanned)
         # todo change the motion_mode early
-        if is_intersect and min_dis<self.r_tan:
+        # if is_intersect and min_dis<self.r_tan:
+        #     self.motion_mode=1
+        #     # print log info
+        #     # print("intersect_end_points:",intersect_end_points)
+        #     # print("new_target:", new_target)
+        #     # print("cur_state:", cur_state)
+        # else:
+        #     # free space exploration
+        #     self.motion_mode=0
+        # todo check the condition with more examples
+        inside_obs=self.check_inside_obs(time, mymap)
+        if inside_obs and min_dis< self.rs/2:
             self.motion_mode=1
-            # print log info
-            # print("intersect_end_points:",intersect_end_points)
-            # print("new_target:", new_target)
-            # print("cur_state:", cur_state)
         else:
-            # free space exploration
             self.motion_mode=0
 
         return self.motion_mode

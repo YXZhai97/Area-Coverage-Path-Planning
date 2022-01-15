@@ -1,6 +1,6 @@
 from plots import *
 from robot import *
-from robot_animation import *
+
 
 """
 The main script for path planning 
@@ -11,11 +11,9 @@ The main script for path planning
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
 # mymap.add_circle(7,7,3)
-
 # add polygon
 mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
-# mymap.show_map()
 
 #####################################################################
 # robot initialization
@@ -24,8 +22,8 @@ mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 robotList = define_robot(gv.robot_number)
 
 # set the initial state and target randomly or manually
-random = 1
-if random:
+
+if gv.random_initial_state:
     # initialize the state and target automatically and randomly
     for robot in robotList:
         robot.random_init_state(mymap)
@@ -36,16 +34,16 @@ else:
     # initialize the robot manually
     # the number of robot is set in global_value.py file
     robot1 = robotList[0]
-    robot1.set_init_state(22, 6)
-    robot1.set_init_target(19, 12)
+    robot1.set_init_state(19.3 , 3)
+    robot1.set_init_target(16,6)
     #
     robot2 = robotList[1]
-    robot2.set_init_state(25, 3)
-    robot2.set_init_target(22, 7)
+    robot2.set_init_state(9.51 ,26.2)
+    robot2.set_init_target(10,19)
     #
     robot3 = robotList[2]
-    robot3.set_init_state(9, 9)
-    robot3.set_init_target(13, 7)
+    robot3.set_init_state(5.7 ,14.2)
+    robot3.set_init_target(8,11)
 
 # show the robot initial position and environment map
 show_robot(robotList, mymap)
@@ -67,8 +65,6 @@ for time in range(gv.Iteration - 1):
         if is_obstacle:
             robot.d_position_limit = robot.step_len
 
-        # if robot.motionmode==0:
-        #     robot.update_target(time)
         # robot.update_target(time)
         cur_target = robot.target[time]
         if robot.motion_mode == 0:
@@ -130,8 +126,8 @@ for time in range(gv.Iteration - 1):
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent >= 0.95 or time > 600:
-        print("Area Covered successfully with 95%")
+    if coverage_percent >= gv.coverage_percent or time > 600:
+        print("Area Covered successfully with: 95%")
         break
 
 ####################################################################
