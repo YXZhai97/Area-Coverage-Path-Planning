@@ -35,13 +35,13 @@ class Robot:
         # d_tan is the activation distance for tangent bug
         self.d_tan=self.rs/5
         # d_position_limit, the limit for updating the state of each step
-        self.d_position_limit=0.7
+        self.d_position_limit=1
 
         # information map
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.step_len=0.3
+        self.step_len=0.4
         self.tangent_end_time=0
         self.tangent_start_time=0
         self.inside_tangent_planner=False

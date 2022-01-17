@@ -12,8 +12,11 @@ mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
 # mymap.add_circle(7,7,3)
 # add polygon
-mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
+# mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
+#add concave obstacles
+mymap.add_polygon([15,35,30,30,34,19,26,15,21,23,11,26])
+mymap.add_polygon([12,20,15,16,12,12,16,9,10,6,6,16])
 
 #####################################################################
 # robot initialization
@@ -90,7 +93,7 @@ for time in range(gv.Iteration - 1):
                 robot.reset_target(time)
                 robot.update_state(time)
                 robot.reset_tangent()
-                print("******robot meet and stop boundary following******")
+                print("**************robot meet and stop boundary following*************")
             else:
                 cur_target = robot.get_target_from_tangent(time)
                 robot.update_state_tangent(time, cur_target)
@@ -99,7 +102,7 @@ for time in range(gv.Iteration - 1):
                 robot.reset_target(time)
                 robot.update_state(time)
                 robot.reset_tangent()
-                print("******robot meet and stop boundary following******")
+                print("*****************robot meet and stop boundary following***********")
             else:
                 cur_target = robot.get_target_from_tangent(time)
                 robot.update_state_tangent(time, cur_target)
@@ -113,7 +116,7 @@ for time in range(gv.Iteration - 1):
 
             obstacle_color = -1
             robot.tarobsmap = flood_fill(robot, sr, sc, obstacle_color)
-            print("********flood fill is done********")
+            print("*******************flood fill is done********************")
             robot.reset_tangent()
         else:
             robot.update_target(time)
@@ -126,7 +129,7 @@ for time in range(gv.Iteration - 1):
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent >= gv.coverage_percent or time > 600:
+    if coverage_percent >= gv.coverage_percent or time > 800:
         print("Area Covered successfully with: 95%")
         break
 

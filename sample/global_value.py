@@ -24,8 +24,8 @@ c2_gamma=2*math.sqrt(c1_gamma)
 grid_map=[]
 
 # environment parameters
-x_bound=30
-y_bound=30
+x_bound=50
+y_bound=50
 v_bound=2
 grid_length=1
 x_n=int(x_bound/grid_length) # number of grid in x direction
@@ -39,8 +39,8 @@ k2=0.01
 rohgamma=0.2
 
 # simulation parameters
-robot_number=3
-random_initial_state=0
+robot_number=1
+random_initial_state=1
 coverage_percent=0.95
 T=80 # total simulation time
 step_size=0.1 # size of each step
