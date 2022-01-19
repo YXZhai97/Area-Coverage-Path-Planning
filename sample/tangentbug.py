@@ -36,6 +36,7 @@ def tangent_bug(start_point, goal_point, my_map):
     hit_point = []
     hit_time = 0
     boundary_follow_finished = False
+    r_tan=0.3
 
     # start the main while loop
     while True:
@@ -70,7 +71,7 @@ def tangent_bug(start_point, goal_point, my_map):
                 dx = temp_goal[0] - new_state[0]
                 previous_angle = atan2(dy, dx)
         else:
-            new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, uniqe_scanned_curve)
+            new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, uniqe_scanned_curve, r_tan)
             previous_angle = new_angle
             mode = check_off(new_state, followed_curve, goal_point, rs, obstacles, step_len, end_points)
 
@@ -261,7 +262,7 @@ def go_straight(cur_state, temp_goal, step_len):
     return next_state
 
 
-def boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve):
+def boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve, r_tan):
     cur_angle = previous_angle
     n_points = len(scanned_curve)
     min_dist = inf
@@ -291,8 +292,8 @@ def boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curv
             next_angle -= pi
 
     # print("next angle", next_angle/pi*180)
-    start_x = (cur_state[0] - close_point[0]) * gv.r_tan / min_dist + close_point[0]
-    start_y = (cur_state[1] - close_point[1]) * gv.r_tan / min_dist + close_point[1]
+    start_x = (cur_state[0] - close_point[0]) * r_tan / min_dist + close_point[0]
+    start_y = (cur_state[1] - close_point[1]) * r_tan / min_dist + close_point[1]
 
     next_x = start_x + cos(next_angle) * step_len
     next_y = start_y + sin(next_angle) * step_len

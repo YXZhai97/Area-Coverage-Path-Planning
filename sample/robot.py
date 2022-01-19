@@ -41,7 +41,7 @@ class Robot:
         self.infomap = np.zeros((gv.y_n, gv.x_n))
         self.tarobsmap = np.zeros((gv.y_n, gv.x_n))
         self.coverage_percent=np.zeros(gv.Iteration)
-        self.step_len=0.4
+        self.step_len=0.5
         self.tangent_end_time=0
         self.tangent_start_time=0
         self.inside_tangent_planner=False
@@ -534,21 +534,22 @@ class Robot:
         # check the distance
         min_dis=get_closest_distance(cur_state, circle_scanned)
         # todo change the motion_mode early
-        # if is_intersect and min_dis<self.r_tan:
-        #     self.motion_mode=1
-        #     # print log info
-        #     # print("intersect_end_points:",intersect_end_points)
-        #     # print("new_target:", new_target)
-        #     # print("cur_state:", cur_state)
-        # else:
-        #     # free space exploration
-        #     self.motion_mode=0
-        # todo check the condition with more examples
-        inside_obs=self.check_inside_obs(time, mymap)
-        if inside_obs and min_dis< self.rs/2:
+        if is_intersect :
             self.motion_mode=1
+            # print log info
+            # print("intersect_end_points:",intersect_end_points)
+            # print("new_target:", new_target)
+            # print("cur_state:", cur_state)
         else:
+            # free space exploration
             self.motion_mode=0
+        # todo check the condition with more examples
+        # id obs is regular shape, rectangle
+        # inside_obs=self.check_inside_obs(time, mymap)
+        # if inside_obs and min_dis< self.rs/2:
+        #     self.motion_mode=1
+        # else:
+        #     self.motion_mode=0
 
         return self.motion_mode
 
@@ -562,7 +563,7 @@ class Robot:
         r_tan=self.r_tan
         step_len = self.step_len
         inner_time = 0
-        time_limit = 400  # end the simulation with time limit
+        time_limit = 500  # end the simulation with time limit
         mode = 0  # mode=0 motion to goal, mode=1 boundary follow
         # get the intersection curve and endpoints
         followed_curve = np.zeros(2)
@@ -609,7 +610,7 @@ class Robot:
                     dx = temp_goal[0] - new_state[0]
                     previous_angle = atan2(dy, dx)
             else:
-                new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve)
+                new_state, new_angle = boundary_follow(previous_angle, cur_state, temp_goal, step_len, scanned_curve, r_tan)
                 previous_angle = new_angle
                 mode = check_off(new_state, scanned_curve, goal_point, rs, obstacles, step_len, end_points)
 
@@ -716,7 +717,7 @@ class Robot:
 
     def check_bug_neighbour(self, time):
         q_i=self.state[time,:2]
-        meet_distance=self.rc/2
+        meet_distance=self.rc
         flag=0
         traveled_time_i=time-self.tangent_start_time
         for r in self.neighbour:
@@ -1087,7 +1088,7 @@ def show_infomap(robot, mymap):
     # flip_infomap=np.flipud(robot.infomap)
 
     # define the color map
-    color_map = {1: np.array([255, 51, 51]),  # 1 is visited area filled with red
+    color_map = {1: np.array([255, 255,153]),  # 1 is visited area filled with red
                  0: np.array([0, 102, 204]),  # 0 is free space filled with blue color
                  -1: np.array([192,192,192])}  # -1 is obstacle filled with gray color
 
@@ -1137,7 +1138,7 @@ def show_merge_infomap(robotList):
     # flip_infomap = np.flipud(merged_map)
 
     # define the color map
-    color_map = {1: np.array([255, 51, 51]),  # 1 is visited area filled with red
+    color_map = {1: np.array([255, 255, 153]),  # 1 is visited area filled with red
                  0: np.array([0, 102, 204])}  # 0 is free space filled with blue color
 
     # define a sD matrix to store the color value

@@ -98,10 +98,10 @@ class EnvMap:
                 poly_lines = np.concatenate((poly_lines, line_i), axis=1)
 
         self.obstacles.append(poly_lines)
-        x_min=min([key_points[0],key_points[2], key_points[4], key_points[6]])
-        x_max=max([key_points[0],key_points[2], key_points[4], key_points[6]])
-        y_min = min([key_points[1], key_points[3], key_points[5], key_points[7]])
-        y_max = max([key_points[1], key_points[3], key_points[5], key_points[7]])
+        x_min=min([key_points[0],key_points[2], key_points[4], key_points[6],key_points[8],key_points[10]])
+        x_max=max([key_points[0],key_points[2], key_points[4], key_points[6],key_points[8],key_points[10]])
+        y_min = min([key_points[1], key_points[3], key_points[5], key_points[7],key_points[9],key_points[11]])
+        y_max = max([key_points[1], key_points[3], key_points[5], key_points[7],key_points[9],key_points[11]])
         self.polygon_bound.append([x_min, x_max, y_min, y_max])
 
     def add_line(self, p1: List, p2: List):
@@ -234,8 +234,8 @@ if __name__ == "__main__":
     # mymap.add_polygon([20,20,25,20,25,25,20,25])
     # # mymap.floodFill(90,60,1)
     # add concave obstacles
-    mymap.add_polygon([23,43,38,38,42,27,34,23,29,31,19,34])
-    mymap.add_polygon([12,20,15,16,12,12,16,9,10,6,6,16])
+    mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+    mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
     mymap.show_map()
 
     bounding_box = []

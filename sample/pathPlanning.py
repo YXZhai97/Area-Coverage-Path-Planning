@@ -15,8 +15,8 @@ mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
 #add concave obstacles
-mymap.add_polygon([15,35,30,30,34,19,26,15,21,23,11,26])
-mymap.add_polygon([12,20,15,16,12,12,16,9,10,6,6,16])
+mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
 
 #####################################################################
 # robot initialization
@@ -25,28 +25,34 @@ mymap.add_polygon([12,20,15,16,12,12,16,9,10,6,6,16])
 robotList = define_robot(gv.robot_number)
 
 # set the initial state and target randomly or manually
-
+diff=0.85
 if gv.random_initial_state:
+
     # initialize the state and target automatically and randomly
     for robot in robotList:
         robot.random_init_state(mymap)
         robot.random_init_target()
+        robot.r_tan=diff*r_tan
+        diff+=0.15
         print(robot.state[0])  # test the initial state has been passed to the state
         print(robot.target[0])
 else:
     # initialize the robot manually
     # the number of robot is set in global_value.py file
     robot1 = robotList[0]
-    robot1.set_init_state(19.3 , 3)
-    robot1.set_init_target(16,6)
+    robot1.set_init_state(39,43)
+    robot1.set_init_target(39,39)
+    robot1.r_tan=0.85*r_tan
     #
     robot2 = robotList[1]
-    robot2.set_init_state(9.51 ,26.2)
-    robot2.set_init_target(10,19)
+    robot2.set_init_state(17,40)
+    robot2.set_init_target(15,36)
+    robot2.r_tan = 1 * r_tan
     #
     robot3 = robotList[2]
-    robot3.set_init_state(5.7 ,14.2)
-    robot3.set_init_target(8,11)
+    robot3.set_init_state(44,13)
+    robot3.set_init_target(40,19)
+    robot1.r_tan = 1.2 * r_tan
 
 # show the robot initial position and environment map
 show_robot(robotList, mymap)
@@ -55,6 +61,12 @@ show_robot(robotList, mymap)
 # monitor the coverage percent
 c_percent = np.zeros(gv.Iteration - 1)
 # todo there is index problem with time+1
+
+# snapshot the robot path and infomap during simulation
+# initialize two variable to store the values
+robot_path_shot_list=[]
+merged_infomap_shot_list=[]
+snapshot_percent=0.15
 
 for time in range(gv.Iteration - 1):
     for robot in robotList:
@@ -126,10 +138,19 @@ for time in range(gv.Iteration - 1):
     coverage_percent = merge_infomap(robotList)
     c_percent[time] = coverage_percent
 
+    # snapshot the robot path and infomap
+
+    if coverage_percent > snapshot_percent:
+        robot_path_shot, merged_infomap_shot=snapshot_path_map(robotList,time)
+        robot_path_shot_list.append(robot_path_shot)
+        merged_infomap_shot_list.append(merged_infomap_shot)
+        snapshot_percent += 0.15
+
+
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent >= gv.coverage_percent or time > 800:
+    if coverage_percent >= gv.coverage_percent or time > 1200:
         print("Area Covered successfully with: 95%")
         break
 
@@ -144,4 +165,5 @@ plot_robot_path(robotList, mymap, time)
 # show 2D animation
 anim = visualize_motion(robotList, mymap, time)
 # plot the information map of the robot
-plot_robot_infomap(robotList, mymap)
+# plot_robot_infomap(robotList, mymap)
+plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap)

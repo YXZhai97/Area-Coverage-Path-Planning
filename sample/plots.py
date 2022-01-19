@@ -31,7 +31,7 @@ def plot_target_position(robotList, mymap, time):
     plt.ylabel("Y coordinate [m]")
     plt.title(
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f" % rs)
-    plt.savefig('../image/target_concave1.png')
+    plt.savefig('../image/target_concave_rc8.png')
 
 
 def plot_coverage_percent(c_percent, time):
@@ -49,7 +49,8 @@ def plot_coverage_percent(c_percent, time):
     plt.xlabel("Simulation time")
     plt.ylabel("Coverage percent")
     plt.title("Area Coverage Percent")
-    plt.savefig('../image/coverage_percent_concave_1.png')
+    plt.savefig('../image/coverage_percent_concave_rc8.png')
+    tikzplotlib.save("../tex_file/coverage_percent_concave_rc8.tex")
 
 
 def plot_robot_path(robotList, mymap, time):
@@ -86,8 +87,8 @@ def plot_robot_path(robotList, mymap, time):
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f m" % rs)
 
     # save png file and tex file
-    plt.savefig('../image/path_4_rs.png')
-    tikzplotlib.save("../tex_file/path_concave_1.tex")
+    plt.savefig('../image/path_concave_rc8.png')
+    tikzplotlib.save("../tex_file/path_concave_rc8.tex")
 
 
 def plot_robot_infomap(robotList, mymap):
@@ -101,24 +102,54 @@ def plot_robot_infomap(robotList, mymap):
     # show_infomap(robotList[2], mymap)
     # subfig4 = figure.add_subplot(224)
     # show_merge_infomap(robotList)
-    plt.savefig('../image/infomap_concave_1.png')
+    plt.savefig('../image/infomap_concave_rc8.png')
 
 
-def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, time ):
+def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap ):
     """
-    plot robot path and infomap togather, at different time slices
-    10%, 25%, 45%, 65%, 80% 95%
+    plot robot path and infomap togather, at different coverage percent:
+    15%, 30%, 45%, 60%, 75% 90%
     Args:
-        robotList:
-        mymap: map
-        time : the total simulation time
+        robot_path_shot_list: a list of a list of robots' state list
+        mymap: 2D grid map
 
     Returns: plot image
 
     """
-    pass
+    figure = plt.figure('robot path at different time ', figsize=(15, 10))
+    coverage_percent_list=[15,30,45,60,75,90]
+    path_color=['g','r','b']
+    for position in range(6):
+        percent=coverage_percent_list[position]
+        figure.add_subplot(2,3,position+1)
+        map_data_3d=merged_infomap_shot_list[position]
+        plt.imshow(map_data_3d, origin='lower')
 
-def snap_shot(robotList,time):
+        for path_i, color in zip(robot_path_shot_list[position], path_color):
+            plt.plot(path_i[:,0], path_i[:,1], color=color, linewidth=1.5)
+            plt.scatter(path_i[-1,0], path_i[-1,1], color=color)
+
+        time=len(path_i)*step_size
+
+        # plot the obstacles
+        for obstacle in mymap.obstacles:
+            plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2)
+
+        # add title and labels
+        plt.xlim(0, x_bound)
+        plt.ylim(0, y_bound)
+        plt.axis('equal')
+
+        # set label and title
+        plt.xlabel("x Position [m]")
+        plt.ylabel("y Position [m]")
+        plt.title("Coverage Percent: %i " % percent + "%"+" at time %1.1f s" % time )
+
+    plt.savefig('../image/path_on_infomap_concave_rc8.png')
+    tikzplotlib.save("../tex_file/path_on_map_concave_rc8.tex")
+
+
+def snapshot_path_map(robotList,time):
     """
     save the merged infomap and robot path at time step t
     Args:
@@ -129,7 +160,7 @@ def snap_shot(robotList,time):
     """
     robot_path_shot=[]
     for r in robotList:
-        robot_path_shot.append(r.state[0:time,:2])
+        robot_path_shot.append(r.state[0:time])
     merged_infomap_shot=merge_map(robotList)
 
     return robot_path_shot, merged_infomap_shot
@@ -150,9 +181,9 @@ def merge_map(robotList):
     merged_map = np.zeros((y_n, x_n))
     data_3d = np.ndarray(shape=(y_n, x_n, 3), dtype=int)
     # define the color map
-    color_map = {1: np.array([255, 51, 51]),  # 1 is visited area filled with red
+    color_map = {1: np.array([255, 255,153]),  # 1 is visited area filled with red
                  0: np.array([0, 102, 204]), # 0 is free space filled with blue color
-                -1:np.array([192,192,192])}  # -1 is obstacle filled with blue color
+                -1:np.array([192,192,192])}  # -1 is obstacle filled with gray color
 
     # define a 3D matrix to store the color value
     data_3d = np.ndarray(shape=(y_n, x_n, 3), dtype=int)
@@ -167,7 +198,7 @@ def merge_map(robotList):
                 sum_explored+=r.infomap[i,j]
             if sum_obs<0:
                 color=-1
-            if sum_explored>0:
+            elif sum_explored>0:
                 color=1
             else:
                 color=0
@@ -222,7 +253,7 @@ def visualize_motion(robot_list, mymap,num_time):
 
     # save video
     write_video = animation.FFMpegWriter(fps=10)  # fps is (frames per second)
-    anim.save('../image/path_animation_concave_1.mp4', writer=write_video)
+    anim.save('../image/path_animation_concave_rc8.mp4', writer=write_video)
     # plt.show()
 
     return anim
