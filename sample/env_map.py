@@ -234,8 +234,9 @@ if __name__ == "__main__":
     # mymap.add_polygon([20,20,25,20,25,25,20,25])
     # # mymap.floodFill(90,60,1)
     # add concave obstacles
-    mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
-    mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
+    # mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+    # mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
+    mymap.add_polygon([20, 37, 33, 33, 37, 23, 28, 19, 24, 26, 16, 28])
     mymap.show_map()
 
     bounding_box = []

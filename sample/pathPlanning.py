@@ -15,8 +15,9 @@ mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
 #add concave obstacles
-mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
-mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
+# mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+mymap.add_polygon([20,37,33,33,37,23,28,19,24,26,16,28])
+# mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
 
 #####################################################################
 # robot initialization
@@ -39,20 +40,25 @@ if gv.random_initial_state:
 else:
     # initialize the robot manually
     # the number of robot is set in global_value.py file
+    # robot1 = robotList[0]
+    # robot1.set_init_state(39,43)
+    # robot1.set_init_target(39,39)
+    # robot1.r_tan=0.85*r_tan
+    # #
+    # robot2 = robotList[1]
+    # robot2.set_init_state(17,40)
+    # robot2.set_init_target(15,36)
+    # robot2.r_tan = 1 * r_tan
+    # #
+    # robot3 = robotList[2]
+    # robot3.set_init_state(44,13)
+    # robot3.set_init_target(40,19)
+    # robot1.r_tan = 1.2 * r_tan
     robot1 = robotList[0]
-    robot1.set_init_state(39,43)
-    robot1.set_init_target(39,39)
-    robot1.r_tan=0.85*r_tan
-    #
-    robot2 = robotList[1]
-    robot2.set_init_state(17,40)
-    robot2.set_init_target(15,36)
-    robot2.r_tan = 1 * r_tan
-    #
-    robot3 = robotList[2]
-    robot3.set_init_state(44,13)
-    robot3.set_init_target(40,19)
+    robot1.set_init_state(44,13)
+    robot1.set_init_target(40,19)
     robot1.r_tan = 1.2 * r_tan
+
 
 # show the robot initial position and environment map
 show_robot(robotList, mymap)
@@ -86,6 +92,7 @@ for time in range(gv.Iteration - 1):
             robot.update_motion_mode(time, mymap, cur_target)
         # update the target based on the motion-mode
         if robot.motion_mode == 1 and not robot.inside_tangent_planner:
+            robot.r_tan+=0.25
             target_t = robot.target[time]
             print("start boundary follow")
             print("motion-mode:", robot.motion_mode)
@@ -122,6 +129,7 @@ for time in range(gv.Iteration - 1):
         elif robot.boundary_follow_finished and time == robot.tangent_end_time - 1:
             cur_target = robot.get_target_from_tangent(time)
             robot.update_state_tangent(time, cur_target)
+
             robot.followed_curve.remove([0, 0])
             sr, sc = get_middle_point(robot.followed_curve)
             print("sr,sc:", sr, sc)
@@ -140,30 +148,32 @@ for time in range(gv.Iteration - 1):
 
     # snapshot the robot path and infomap
 
-    if coverage_percent > snapshot_percent:
-        robot_path_shot, merged_infomap_shot=snapshot_path_map(robotList,time)
-        robot_path_shot_list.append(robot_path_shot)
-        merged_infomap_shot_list.append(merged_infomap_shot)
-        snapshot_percent += 0.15
+    # if coverage_percent > snapshot_percent:
+    #     robot_path_shot, merged_infomap_shot=snapshot_path_map(robotList,time)
+    #     robot_path_shot_list.append(robot_path_shot)
+    #     merged_infomap_shot_list.append(merged_infomap_shot)
+    #     snapshot_percent += 0.15
 
 
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
-    if coverage_percent >= gv.coverage_percent or time > 1200:
+    if coverage_percent >= gv.coverage_percent or time > 540:
         print("Area Covered successfully with: 95%")
         break
 
 ####################################################################
 # Plots and animations
 # plot the coverage percent
-plot_coverage_percent(c_percent, time)
+# plot_coverage_percent(c_percent, time)
 # plot the robot target position
-plot_target_position(robotList, mymap, time)
+# plot_target_position(robotList, mymap, time)
 # plot the robot path
-plot_robot_path(robotList, mymap, time)
+# plot_robot_path(robotList, mymap, time)
 # show 2D animation
-anim = visualize_motion(robotList, mymap, time)
-# plot the information map of the robot
+# anim = visualize_motion(robotList, mymap, time)
+
 # plot_robot_infomap(robotList, mymap)
-plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap)
+# plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap)
+
+single_path_on_infomap(robotList, mymap, time)

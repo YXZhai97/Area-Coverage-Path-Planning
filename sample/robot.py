@@ -1107,6 +1107,8 @@ def show_infomap(robot, mymap):
 
     # figure = plt.figure('2D grid map', figsize=(5, 5))
     # add label
+    plt.xlim(0, gv.x_bound)
+    plt.ylim(0, gv.y_bound)
     plt.xlabel("X coordinate [m]")
     plt.ylabel("Y coordinate [m]")
     plt.title("Information map of robot %i" % robot.id)
