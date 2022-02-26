@@ -149,6 +149,33 @@ def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap )
     tikzplotlib.save("../tex_file/path_on_map_concave_rc8.tex")
 
 
+def single_path_on_infomap(robotList, mymap, time):
+
+    figure = plt.figure('with flood fill', figsize=(7, 7))
+
+    show_infomap(robotList[0], mymap)
+    for robot in robotList:
+        plt.plot(robot.state[:time, 0], robot.state[:time, 1],color='g', linewidth=1.5)
+        plt.scatter(robot.state[time-1,0] , robot.state[time-1,1],color='g')
+
+    for obstacle in mymap.obstacles:
+        plt.plot(obstacle[0], obstacle[1], color='k', linewidth=2)
+
+    plt.xlim(0, x_bound)
+    plt.ylim(0, y_bound)
+    plt.axis('equal')
+
+    # set label and title
+    plt.xlabel("x Position [m]")
+    plt.ylabel("y Position [m]")
+    plt.title("Circumnavigation without Flood-Fill")
+    plt.savefig('../image/single_robot_with_floodfill.png',dpi=200)
+
+
+
+
+
+
 def snapshot_path_map(robotList,time):
     """
     save the merged infomap and robot path at time step t
