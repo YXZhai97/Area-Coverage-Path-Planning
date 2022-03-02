@@ -5,7 +5,7 @@ import numpy as np
 from global_value import *
 from robot import show_merge_infomap, show_infomap
 from matplotlib import animation
-
+from save_value import load_variavle
 def plot_target_position(robotList, mymap, time):
     """
     This function plots the target points of the robot
@@ -31,7 +31,7 @@ def plot_target_position(robotList, mymap, time):
     plt.ylabel("Y coordinate [m]")
     plt.title(
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f" % rs)
-    plt.savefig('../image/target_concave_rc8.png')
+    plt.savefig('../image/target_concave_rc.png')
 
 
 def plot_coverage_percent(c_percent, time):
@@ -49,8 +49,8 @@ def plot_coverage_percent(c_percent, time):
     plt.xlabel("Simulation time")
     plt.ylabel("Coverage percent")
     plt.title("Area Coverage Percent")
-    plt.savefig('../image/coverage_percent_concave_rc8.png')
-    tikzplotlib.save("../tex_file/coverage_percent_concave_rc8.tex")
+    plt.savefig('../image/coverage_percent_rc0.png')
+    # tikzplotlib.save("../tex_file/coverage_percent_concave_rc8.tex")
 
 
 def plot_robot_path(robotList, mymap, time):
@@ -66,7 +66,7 @@ def plot_robot_path(robotList, mymap, time):
 
     """
     figure= plt.figure('robot path ', figsize=(6, 6))
-
+    # show_merge_infomap(robotList)
     # plot the robot path
     for robot in robotList:
         plt.plot(robot.state[:time, 0], robot.state[:time, 1])
@@ -87,8 +87,8 @@ def plot_robot_path(robotList, mymap, time):
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f m" % rs)
 
     # save png file and tex file
-    plt.savefig('../image/path_concave_rc8.png')
-    tikzplotlib.save("../tex_file/path_concave_rc8.tex")
+    plt.savefig('../image/path_rc0.png')
+    # tikzplotlib.save("../tex_file/path_concave_rc8.tex")
 
 
 def plot_robot_infomap(robotList, mymap):
@@ -102,7 +102,7 @@ def plot_robot_infomap(robotList, mymap):
     # show_infomap(robotList[2], mymap)
     # subfig4 = figure.add_subplot(224)
     # show_merge_infomap(robotList)
-    plt.savefig('../image/infomap_concave_rc8.png')
+    plt.savefig('../image/infomap_concave_rs4.png')
 
 
 def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap ):
@@ -145,8 +145,8 @@ def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap )
         plt.ylabel("y Position [m]")
         plt.title("Coverage Percent: %i " % percent + "%"+" at time %1.1f s" % time )
 
-    plt.savefig('../image/path_on_infomap_concave_rc8.png')
-    tikzplotlib.save("../tex_file/path_on_map_concave_rc8.tex")
+    plt.savefig('../image/path_on_infomap_concave_rs3.png')
+    # tikzplotlib.save("../tex_file/path_on_map_concave_rc8.tex")
 
 
 def single_path_on_infomap(robotList, mymap, time):
@@ -284,5 +284,42 @@ def visualize_motion(robot_list, mymap,num_time):
     # plt.show()
 
     return anim
+
+# plot and compare coverage percent curve
+
+def compare_coverage_percent(file_list):
+    figure = plt.figure('Coverage percent', figsize=(5, 5))
+    file = file_list[0]
+    c_percent = load_variavle(file)
+    time = len(c_percent)
+    time_steps = np.linspace(0, step_size * time, time)
+    l1 = plt.plot(time_steps, c_percent, label='rc=2', color='k')
+
+    file=file_list[1]
+    c_percent=load_variavle(file)
+    time=len(c_percent)
+    time_steps = np.linspace(0, step_size * time, time )
+    l2=plt.plot(time_steps, c_percent,label='rc=5', color='r')
+
+    file = file_list[2]
+    c_percent = load_variavle(file)
+    time = len(c_percent)
+    time_steps = np.linspace(0, step_size * time, time)
+    l3 = plt.plot(time_steps, c_percent,label='rc=8',color='b')
+
+    plt.legend()
+    plt.xlabel("Simulation time")
+    plt.ylabel("Coverage percent")
+    plt.title("Area Coverage Percent")
+    plt.grid(linewidth=0.5,color='lightgray')
+    plt.savefig('../image/compare_coverage_percent_rc.png', dpi=200)
+
+if __name__=="__main__":
+    file_list=['../data/coverage_percentrc2','../data/coverage_percentrc5','../data/coverage_percentrc8']
+    compare_coverage_percent(file_list)
+
+
+
+
 
 

@@ -3,7 +3,7 @@ import math
 # robot parameters
 # rs=4 suitable for 50x50 grid map rs=3 suitable for 30x30 map
 rs=4
-rc=8
+rc=1
 r_tan=rs/4
 target_distance=rs
 dimension=2
@@ -39,9 +39,9 @@ k2=0.01
 rohgamma=0.2
 
 # simulation parameters
-robot_number=1
+robot_number=3
 random_initial_state=0
-coverage_percent=0.75
+coverage_percent=0.95
 T=120 # total simulation time
 step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number
