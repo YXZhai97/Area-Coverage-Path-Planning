@@ -6,7 +6,8 @@ from global_value import *
 from robot import show_merge_infomap, show_infomap
 from matplotlib import animation
 from save_value import load_variavle
-def plot_target_position(robotList, mymap, time):
+
+def plot_target_position(robotList, mymap, time, file_path):
     """
     This function plots the target points of the robot
     Args:
@@ -31,10 +32,10 @@ def plot_target_position(robotList, mymap, time):
     plt.ylabel("Y coordinate [m]")
     plt.title(
         "The robot path with iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rs %1.2f" % rs)
-    plt.savefig('../image/target_concave_rc5.png')
+    plt.savefig(file_path)
 
 
-def plot_coverage_percent(c_percent, time):
+def plot_coverage_percent(c_percent, time, file_path):
     '''
     This function plots the coverage percent
     Args:
@@ -49,11 +50,11 @@ def plot_coverage_percent(c_percent, time):
     plt.xlabel("Simulation time")
     plt.ylabel("Coverage percent")
     plt.title("Area Coverage Percent")
-    plt.savefig('../image/coverage_percent_many_circles.png')
+    plt.savefig(file_path)
     # tikzplotlib.save("../tex_file/coverage_percent_concave_rc8.tex")
 
 
-def plot_robot_path(robotList, mymap, time):
+def plot_robot_path(robotList, mymap, time, file_path):
 
     """
     This function plots the robot path and obstacles
@@ -88,25 +89,18 @@ def plot_robot_path(robotList, mymap, time):
         "Iteration steps: %i " % time + ",time step: %1.2f s " % step_size + ",robot rc: %1.2f m" % rc+",robot rs: %1.2f m" % rs)
 
     # save png file and tex file
-    plt.savefig('../image/path_many_circles.png')
+    plt.savefig(file_path)
     # tikzplotlib.save("../tex_file/path_concave_rc8.tex")
 
 
-def plot_robot_infomap(robotList, mymap):
+def plot_robot_infomap(robotList, mymap, file_path):
 
-    figure=plt.figure('robot information map ', figsize=(10, 10))
-    subfig1 = figure.add_subplot(221)
-    show_infomap(robotList[0], mymap)
-    # subfig2 = figure.add_subplot(222)
-    # show_infomap(robotList[1], mymap)
-    # subfig3=figure.add_subplot(223)
-    # show_infomap(robotList[2], mymap)
-    # subfig4 = figure.add_subplot(224)
-    # show_merge_infomap(robotList)
-    plt.savefig('../image/infomap_concave_rs4.png')
+    figure=plt.figure('robot information map ', figsize=(5, 5))
+    show_merge_infomap(robotList)
+    plt.savefig(file_path)
 
 
-def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap ):
+def plot_path_snapshot(robot_path_shot_list, merged_infomap_shot_list, mymap, file_path ):
     """
     plot robot path and infomap togather, at different coverage percent:
     15%, 30%, 45%, 60%, 75% 90%
@@ -146,11 +140,11 @@ def plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap )
         plt.ylabel("y Position [m]")
         plt.title("Coverage Percent: %i " % percent + "%"+" at time %1.1f s" % time )
 
-    plt.savefig('../image/path_on_infomap_many_circles.png')
+    plt.savefig(file_path)
     # tikzplotlib.save("../tex_file/path_on_map_concave_rc8.tex")
 
 
-def single_path_on_infomap(robotList, mymap, time):
+def final_path_on_infomap(robotList, mymap, time, file_path):
 
     figure = plt.figure('with flood fill', figsize=(7, 7))
 
@@ -170,10 +164,7 @@ def single_path_on_infomap(robotList, mymap, time):
     plt.xlabel("x Position [m]")
     plt.ylabel("y Position [m]")
     plt.title("Circumnavigation without Flood-Fill")
-    plt.savefig('../image/single_robot_with_floodfill.png',dpi=200)
-
-
-
+    plt.savefig(file_path, dpi=200)
 
 
 
@@ -192,8 +183,6 @@ def snapshot_path_map(robotList,time):
     merged_infomap_shot=merge_map(robotList)
 
     return robot_path_shot, merged_infomap_shot
-
-
 
 
 
@@ -237,7 +226,7 @@ def merge_map(robotList):
 
 
 
-def visualize_motion(robot_list, mymap,num_time):
+def visualize_motion(robot_list, mymap,num_time, file_path):
     """
 
     Args:
@@ -281,7 +270,7 @@ def visualize_motion(robot_list, mymap,num_time):
 
     # save video
     write_video = animation.FFMpegWriter(fps=10)  # fps is (frames per second)
-    anim.save('../image/path_many_circles.mp4', writer=write_video)
+    anim.save(file_path, writer=write_video)
     # plt.show()
 
     return anim
@@ -289,7 +278,16 @@ def visualize_motion(robot_list, mymap,num_time):
 # plot and compare coverage percent curve
 
 def compare_coverage_percent(file_list):
+    """
+
+    Args:
+        file_list:
+
+    Returns:
+
+    """
     figure = plt.figure('Coverage percent', figsize=(5, 5))
+
     file = file_list[0]
     c_percent = load_variavle(file)
     time = len(c_percent)
