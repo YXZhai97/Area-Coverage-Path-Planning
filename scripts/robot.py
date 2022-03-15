@@ -258,33 +258,7 @@ class Robot:
         if norm_u_alpha > 50:
             u_alpha = 50 * u_alpha / norm_u_alpha
 
-        # print("u_alpha:", u_alpha)
 
-        # calculate the influence of beta_agent
-        # first get the neighbour
-        # todo repulsive force too large, when robots meet, separate too quick
-
-        # the influence of beta-agent is deleted
-        # if len(beta_neighbour)>0:
-        #     k = 0
-        #     for beta in beta_neighbour:
-        #         q_beta = np.array(beta)[:2]
-        #         v_beta = np.array(beta)[2:]
-        #         # todo adjacency matrix B
-        #         b_ik = B[k]  # i and k
-        #         # print(b_ik)
-        #         u_beta_k_1 = gv.c1_beta * m.phi_beta(m.sigma_norm(q_beta - q_i)) * m.norm_direction(q_beta, q_i)
-        #         # u_beta_k_2 = np.multiply((v_beta - v_i),gv.c2_beta * b_ik )
-        #         u_beta_k_2 = (gv.c2_beta * b_ik) * (v_beta - v_i)
-        #         u_beta += u_beta_k_1 + u_beta_k_2
-        #         k += 1
-        #
-        # # if robot out of the boundary, the repulsion force is cancelled
-        # if q_i[0] > gv.x_bound or q_i[0]<0 or q_i[1]>gv.y_bound or q_i[1]<0:
-        #     u_beta=0
-
-        # calculate the influence of gamma_agent
-        # target is Iteration*2 dimensional matrix
         q_target = self.target[time]
         u_gamma = -gv.c1_gamma * (q_i - q_target) - gv.c2_gamma * v_i
 
@@ -292,25 +266,20 @@ class Robot:
         norm_u_gamma = np.linalg.norm(u_gamma)
         if norm_u_gamma > 50:
             u_gamma = 50 * u_gamma / norm_u_gamma
-        # print("u_gamma:", u_gamma)
-        # merge u_alpha, u_beta, u_gamma
         u = u_alpha + u_beta + u_gamma
-        # print(u)
+
         # limit the acceleration
         norm_u = np.linalg.norm(u)
         if norm_u > 40:
             u = 40 * u / norm_u
-
-        # print(u)
-        # print(norm_u)
 
         return u
 
 
     def benefit_value(self, time):
 
-
         lamda_matrix = np.zeros((gv.y_n, gv.x_n))
+
         for i in range(gv.x_n):
             for j in range(gv.y_n):
                 x_center = i * gv.grid_length + 0.5 * gv.grid_length
@@ -329,8 +298,7 @@ class Robot:
 
         return self.benefit_matrix
 
-    # get the maximum value in benefit_matrix
-    # todo review code
+
 
     def update_target(self, time):
         '''
@@ -455,8 +423,6 @@ class Robot:
                 return True
 
         return False
-
-
 
 
 
@@ -659,14 +625,6 @@ class Robot:
         return inner_states, boundary_follow_finished, followed_curve
 
 
-    # check if target inside obstacle
-    # def check_inside_obstacle(self, cur_target, mymap):
-    #     x=cur_target[0]
-    #     y=cur_target[1]
-    #     row=y
-    #     pass
-
-
 
     def update_state_tangent(self, time, target):
 
@@ -680,9 +638,6 @@ class Robot:
         if norm_u_gamma > 150:
             u_gamma = 150 * u_gamma / norm_u_gamma
 
-        # check the motion mode and neighbour agent mode
-        # calculate the repulsive force from neighbour agents :u_alpha
-        # todo
 
         # calculate the deviation
         d_v = u_gamma * gv.step_size
@@ -814,23 +769,7 @@ class Robot:
 
     def reset_target(self, time):
 
-        # get the benefit value matrix
-        # b_matrix=self.benefit_matrix
-        # row=len(b_matrix)
-        # col =len(b_matrix[0])
-        # min_b_value=100
-        #
-        # # get the smallest value from the matrix
-        # for x in range(col):
-        #     for y in range(row):
-        #         if 0<b_matrix[y,x]<min_b_value:
-        #             min_b_value=b_matrix[y,x]
-        #             target=[x,y]
-        # target_x=gv.grid_length*target[0]+gv.grid_length/2
-        # target_y=gv.grid_length*target[1]+gv.grid_length/2
-        # self.target[time+1]=[target_x, target_y]
 
-        # reset target along the negative direction of the current velocity
         cur_v=self.state[time,2:]
         cur_state=self.state[time,:2]
         negative_v=-cur_v/np.linalg.norm(cur_v)
@@ -845,25 +784,6 @@ class Robot:
 
         self.target[time+1]=temp_target
 
-
-
-    def check_new_obstacle(self):
-        """
-        check if a nes obstacle is discovered
-        if new_obstacle found clean the self.followed_curve
-
-        Returns:
-
-        """
-        pass
-
-    def scann_rs(self):
-        """
-        scann the surrounding area
-        Returns: obstacle points
-
-        """
-        pass
 
 
     def get_beta_agent(self, time):
@@ -999,18 +919,7 @@ class Robot:
 
         return new_neighbour
 
-    # todo: integrate tangent bug to the Robot Class
-    def t_bug(self, cur_state, new_targt, mymap):
-        """
-        Args:
-            cur_state: the current state
-            new_targt: the target point returned by update_target()
-            mymap: the map
-        Returns:
-            temp_target and new_state
-        """
-        # integrate the tangent_bug here
-        pass
+
 
 
 def get_middle_point(followed_curve):
