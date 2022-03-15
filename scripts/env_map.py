@@ -223,23 +223,21 @@ class EnvMap:
         # show the obstacle points
         for obstacle in self.obstacles:
             plt.plot(obstacle[0], obstacle[1],linewidth=2, color='r')
+        plt.savefig('../image/env_map_example.png')
         plt.show()
+
 
 
 if __name__ == "__main__":
     mymap = EnvMap(50,50, 1)
-    mymap.add_circle(10, 40, 3)
-    mymap.add_circle(12, 13, 3)
-    mymap.add_circle(35, 11, 3)
-    mymap.add_circle(38, 38, 3)
-    mymap.add_circle(18, 28, 3)
+
     # mymap.add_circle(30, 20, 10)
-    # mymap.add_circle(10, 15, 8)
+    mymap.add_circle(10, 15, 6)
     # mymap.add_circle(11,20,4)
     # mymap.add_polygon([20,20,25,20,25,25,20,25])
     # # mymap.floodFill(90,60,1)
     # add concave obstacles
-    # mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+    mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
     # mymap.add_polygon([15, 22, 16, 15,20,12,10,7,6,16])
     # mymap.add_polygon([20, 37, 33, 33, 37, 23, 28, 19, 24, 26, 16, 28])
     mymap.show_map()

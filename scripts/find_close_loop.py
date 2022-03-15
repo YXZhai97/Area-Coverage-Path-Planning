@@ -17,6 +17,7 @@ grid_map=np.array([
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ])
+
 print(grid_map)
 def numIslands(grid):
     m, n = len(grid), len(grid[0])

@@ -10,11 +10,8 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-mymap.add_circle(10, 40, 3)
-mymap.add_circle(12, 13, 3)
-mymap.add_circle(35, 11, 3)
-mymap.add_circle(38, 38, 3)
-mymap.add_circle(18, 28, 3)
+# mymap.add_circle(10, 15, 6)
+# mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
 # add polygon
 # mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
@@ -25,7 +22,6 @@ mymap.add_circle(18, 28, 3)
 
 #####################################################################
 # robot initialization
-
 # define robots
 robotList = define_robot(gv.robot_number)
 
@@ -64,10 +60,8 @@ else:
 # show the robot initial position and environment map
 show_robot(robotList, mymap)
 
-# iteration
 # monitor the coverage percent
 c_percent = np.zeros(gv.Iteration - 1)
-# todo there is index problem with time+1
 
 # snapshot the robot path and infomap during simulation
 # initialize two variable to store the values
@@ -75,6 +69,7 @@ robot_path_shot_list=[]
 merged_infomap_shot_list=[]
 snapshot_percent=0.15
 
+# Interation
 for time in range(gv.Iteration - 1):
     for robot in robotList:
         # get current robot state
@@ -148,37 +143,37 @@ for time in range(gv.Iteration - 1):
     c_percent[time] = coverage_percent
 
     # snapshot the robot path and infomap
-
-    # if coverage_percent > snapshot_percent:
-    #     robot_path_shot, merged_infomap_shot=snapshot_path_map(robotList,time)
-    #     robot_path_shot_list.append(robot_path_shot)
-    #     merged_infomap_shot_list.append(merged_infomap_shot)
-    #     snapshot_percent += 0.15
-
+    if coverage_percent > snapshot_percent:
+        robot_path_shot, merged_infomap_shot=snapshot_path_map(robotList,time)
+        robot_path_shot_list.append(robot_path_shot)
+        merged_infomap_shot_list.append(merged_infomap_shot)
+        snapshot_percent += 0.15
 
     # print log info
     print("Time step:", time)
     print("Coverage percent:", coverage_percent)
     if coverage_percent >= gv.coverage_percent or time > 540:
-        print("Area Covered successfully with: 95%")
+        print("Area Covered successfully with: 99%")
         break
 
 ####################################################################
 # save data
-# filename=save_variable(c_percent[:time],'../data/coverage_rc10')
-# Plots and animations
+# filename=save_variable(c_percent[:time],'../data/coverage_percent_01')
+
 # plot the coverage percent
-plot_coverage_percent(c_percent, time)
-# compare_coverage_percent()
+plot_coverage_percent(c_percent, time,'../image/coverage_percent_01.png')
+
 # plot the robot target position
-# plot_target_position(robotList, mymap, time)
+plot_target_position(robotList, mymap, time, '../image/target_points.png')
+
 # plot the robot path
-plot_robot_path(robotList, mymap, time)
+plot_robot_path(robotList, mymap, time, '../image/robot_path_01.png')
+
 # show 2D animation
-anim = visualize_motion(robotList, mymap, time)
+anim = visualize_motion(robotList, mymap, time, '../image/animation_01.mp4')
 
-# plot_robot_infomap(robotList, mymap)
-plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap)
 
-# single_path_on_infomap(robotList, mymap, time)
+plot_path_snapshot(robot_path_shot_list, merged_infomap_shot_list, mymap, '../image/path_snapshot_01.png')
+
+final_path_on_infomap(robotList, mymap, time, '../image/final_path_on_infomap_01.png')
 

@@ -1063,7 +1063,6 @@ def show_robot(robotList, mymap):
     # add y label
     plt.ylabel('y-coordinate')
     # save image to the image folder
-    # plt.savefig('../image/initial_state.png')
     plt.show()
     plt.savefig('../image/initial_state.png')
 
@@ -1204,7 +1203,7 @@ if __name__ == "__main__":
 
     # test the random_init_state function
     # first define 4 robots
-    define_robot(6)
+    define_robot(4)
     print(gv.robotList[0].initial_state)
     # plot the initial state point on map with id number as label
     for robot in gv.robotList:
@@ -1222,7 +1221,7 @@ if __name__ == "__main__":
     # add y label
     plt.ylabel('y-coordinate')
     # save image to the image folder
-    # plt.savefig('../image/initial_state.png')
+    plt.savefig('../image/initial_state.png')
     plt.show()
 
     # test get_neighbour()

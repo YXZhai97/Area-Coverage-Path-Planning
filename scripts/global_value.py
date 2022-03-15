@@ -41,7 +41,7 @@ rohgamma=0.2
 # simulation parameters
 robot_number=3
 random_initial_state=1
-coverage_percent=0.95
+coverage_percent=0.99
 T=120 # total simulation time
 step_size=0.1 # size of each step
 Iteration=int(T/step_size) # total iteration number
