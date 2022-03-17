@@ -39,8 +39,12 @@ Keywords: Multi-agent system, online area coverage, path planning, cooperative c
 ### Area coverage with obstacles 
 <div align=center><img src="image/path_on_infomap_concave_rc8.png" width=800 /></div>
 
+## Structure of the pathPlanning.py file 
+The simulation is conducted by running the pathPlanning.py file in the scripts folder. 
+<div align=center><img src="image/main_function.png" width=600 /></div>
 
 ## Usage 
+The pathPlanning.py file can be modified by the user to add robots and define obstacles. 
 
 ### Create a 2D grid map with obstacles 
 
@@ -87,6 +91,7 @@ plot_path_on_infomap(robot_path_shot_list, merged_infomap_shot_list, mymap) # pl
 single_path_on_infomap(robotList, mymap, time) # plot the final result of the path planng together with the generated information map 
 
 ```
+
 ### Run the simulation 
 Run the pathPlanning.py script to start the simulation. 
 

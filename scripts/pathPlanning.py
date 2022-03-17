@@ -10,8 +10,8 @@ The main script for path planning
 # define the 2D map with length 100 width 100 and grid length 1
 mymap = EnvMap(gv.x_bound, gv.y_bound, gv.grid_length)
 # add a circle
-# mymap.add_circle(10, 15, 6)
-# mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
+mymap.add_circle(10, 15, 6)
+mymap.add_polygon([24,41,37,37,40,27,32,23,28,30,20,32])
 # add polygon
 # mymap.add_polygon([15, 15, 23, 15, 23, 23, 15, 23])
 
